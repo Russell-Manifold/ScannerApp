@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:controls="clr-namespace:Data.KeyboardContol;assembly=Data"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="InventoryCount.AcceptScanPage">
+    <StackLayout VerticalOptions="StartAndExpand">
+        <Label Text="*APPROVAL*" FontSize="40" TextColor="Red"/>
+        <Label x:Name="lblInfo" FontSize="Large"/>
+        <Label Text="Scan User Code" FontSize="Medium"/>
+        <controls:ExtendedEntry ShowVirtualKeyboardOnFocus="False" HorizontalOptions="FillAndExpand" VerticalOptions="Start" HorizontalTextAlignment="Center" IsPassword="True" x:Name="txfUserCode" Completed="txfUserCode_Completed"/>
+        <ActivityIndicator IsVisible="False" IsRunning="True" x:Name="LoadingIndicator"/>
+    </StackLayout>
+</ContentPage>

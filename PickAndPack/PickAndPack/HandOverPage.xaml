@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:controls="clr-namespace:Data.KeyboardContol;assembly=Data"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             x:Class="PickAndPack.HandOverPage"
+             Title="Hand Over Slip(s)">
+    <StackLayout VerticalOptions="FillAndExpand">
+        <StackLayout VerticalOptions="Start">
+            <Image Source="GetPickSlips.png" VerticalOptions="Start" HorizontalOptions="CenterAndExpand" x:Name="ToImg"/>
+            <Image Source="handover.png" VerticalOptions="Start" HorizontalOptions="CenterAndExpand" x:Name="MainImg" IsVisible="False"/>
+            <Label Text="Please Scan Receiving User:" x:Name="lblRecUser"  FontSize="Large" VerticalOptions="StartAndExpand" HorizontalOptions="CenterAndExpand" HorizontalTextAlignment="Center"/>
+            <controls:ExtendedEntry ShowVirtualKeyboardOnFocus="False" IsPassword="True" x:Name="txfRecUser" FontSize="Large" VerticalOptions="StartAndExpand" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" Completed="txfRecUser_Completed"/>
+            <Label Text="Please Scan the Picking slips:" x:Name="lblSOCode" FontSize="Large" VerticalOptions="StartAndExpand" HorizontalOptions="CenterAndExpand" HorizontalTextAlignment="Center" IsVisible="False"/>
+            <controls:ExtendedEntry ShowVirtualKeyboardOnFocus="False" x:Name="txfSOCOde" FontSize="Large" VerticalOptions="StartAndExpand" HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center" Completed="txfSOCOde_Completed" IsVisible="False"/>
+            <ActivityIndicator x:Name="Loading" IsVisible="False" VerticalOptions="StartAndExpand" HorizontalOptions="Center"/>
+            <ScrollView>
+                <Label x:Name="lblScannedCodes" FontSize="Medium" Text=" " VerticalOptions="StartAndExpand" HorizontalOptions="CenterAndExpand"/>
+            </ScrollView>
+        </StackLayout>
+        <StackLayout VerticalOptions="EndAndExpand">
+            <Button IsVisible="False" TextColor="Green" VerticalOptions="EndAndExpand" Text="Complete" BackgroundColor="Transparent" BorderColor="Black" BorderWidth="1" FontAttributes="Bold" ImageSource="TickSmall.png" FontSize="Large" x:Name="btnComplete" Clicked="btnComplete_Clicked"/>
+        </StackLayout>
+    </StackLayout>
+</ContentPage>

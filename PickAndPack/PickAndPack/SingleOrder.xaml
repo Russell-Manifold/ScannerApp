@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:Data.KeyboardContol;assembly=Data"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Title="1 Order 1+ Pallets"
+             x:Class="PickAndPack.SingleOrder">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem  IconImageSource="save.png" x:Name="btnSave" Clicked="btnSave_Clicked"/>
+    </ContentPage.ToolbarItems>
+    <StackLayout Orientation="Vertical" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"  Padding="0, 20,0,0">
+        <StackLayout x:Name="SOCodeLayout" VerticalOptions="Start">
+            <StackLayout Orientation="Horizontal">
+                <Image Source="OnePallet.png" HorizontalOptions="Fill" HeightRequest="50"/>
+                <Label x:Name="lblSOCode" Text="Slip Number:"  FontSize="Medium" HorizontalOptions="CenterAndExpand" HorizontalTextAlignment="Center"/>
+            </StackLayout>
+            <controls:ExtendedEntry HorizontalTextAlignment="Center" ShowVirtualKeyboardOnFocus="False"  x:Name="txfSOCode" HorizontalOptions="FillAndExpand" Completed="txfSOCode_Completed"/>
+        </StackLayout>
+        <StackLayout x:Name="ItemCodeLayout" IsVisible="False">
+            <!--<Label x:Name="lblItemCodes" Text="Scan Items:"  FontSize="Large" HorizontalOptions="CenterAndExpand" HorizontalTextAlignment="Center"/>-->
+            <controls:ExtendedEntry HorizontalTextAlignment="Center" ShowVirtualKeyboardOnFocus="False"  x:Name="txfItemCode" HorizontalOptions="FillAndExpand" Completed="txfItemCode_Completed" />
+        </StackLayout>
+        <ActivityIndicator IsVisible="False" x:Name="LodingIndiactor" IsRunning="True" />
+        <StackLayout x:Name="GridLayout" IsVisible="False">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100*" />
+                    <ColumnDefinition Width="30*" />
+                    <ColumnDefinition Width="30*" />
+                    <ColumnDefinition Width="30*" />
+                    <ColumnDefinition Width="30*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Text="Description" FontSize="15" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="0" Grid.Column="1" Text="ORD" FontSize="15" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="0" Grid.Column="2" Text="Scan" FontSize="15" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="0" Grid.Column="3" Text="BAL" FontSize="15" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+                <Label Grid.Row="0" Grid.Column="4" Text="Pallet" FontSize="15" FontAttributes="Bold" HorizontalTextAlignment="Center"/>
+            </Grid>
+            <StackLayout>
+                <ListView x:Name="lstItems" ItemSelected="lstItems_ItemSelected" HasUnevenRows="True">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <StackLayout>
+                                    <StackLayout.Triggers>
+                                        <DataTrigger TargetType="StackLayout" Binding="{Binding Complete}" Value="Yes">
+                                            <Setter Property="BackgroundColor" Value="#53f57e"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="StackLayout" Binding="{Binding Complete}" Value="No">
+                                            <Setter Property="BackgroundColor" Value="#f5a940"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="StackLayout" Binding="{Binding Complete}" Value="NotStarted">
+                                            <Setter Property="BackgroundColor" Value="Transparent"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="StackLayout" Binding="{Binding Complete}" Value="Wrong">
+                                            <Setter Property="BackgroundColor" Value="#f50505"/>
+                                        </DataTrigger>
+                                    </StackLayout.Triggers>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="*"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100*" />
+                                            <ColumnDefinition Width="30*" />
+                                            <ColumnDefinition Width="30*" />
+                                            <ColumnDefinition Width="30*" />
+                                            <ColumnDefinition Width="30*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Label Grid.Row="0" Grid.Column="0" Text="{Binding ItemDesc}" HorizontalTextAlignment="Start" TextColor="Black"/>
+                                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding ItemQty}" HorizontalTextAlignment="Center" TextColor="Black"/>
+                                        <Label Grid.Row="0" Grid.Column="2" Text="{Binding ScanAccQty}" HorizontalTextAlignment="Center" TextColor="Black"/>
+                                        <Label Grid.Row="0" Grid.Column="3" Text="{Binding Balacnce}" HorizontalTextAlignment="Center" TextColor="Black"/>
+                                        <Label Grid.Row="0" Grid.Column="4" Text="{Binding PalletNum}" HorizontalTextAlignment="Center" TextColor="Black"/>
+                                        <Label Grid.Row="1" Grid.Column="0" BackgroundColor="LightGray" Text="{Binding Bin,StringFormat='Bin: {0}'}" TextColor="Black">
+                                            <Label.Triggers>
+                                                <DataTrigger TargetType="Label" Binding="{Binding Bin}" Value="NA">
+                                                    <Setter Property="IsVisible" Value="False"/>
+                                                </DataTrigger>
+                                            </Label.Triggers>
+                                        </Label>
+                                    </Grid>
+                                </StackLayout>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal" HeightRequest="40" VerticalOptions="EndAndExpand" x:Name="palletAddStack">
+                <Label Text="Pallets" FontSize="25"  HorizontalOptions="FillAndExpand" HorizontalTextAlignment="Center"/>
+                <Button FontSize="Large" x:Name="btnPrev" Clicked="btnPrevPallet_Clicked" BackgroundColor="Transparent" ImageSource="PalletMinus.png" HorizontalOptions="StartAndExpand" />
+                <Label x:Name="lblPalletNumber" Text="1" FontSize="25"  HorizontalOptions="CenterAndExpand"/>
+                <Button FontSize="Large" x:Name="btnNext" Clicked="btnNextPallet_Clicked" BackgroundColor="Transparent" ImageSource="PalletAdd.png" HorizontalOptions="EndAndExpand"/>
+            </StackLayout>
+            <StackLayout IsVisible="False" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" Orientation="Horizontal" x:Name="CompletedStack">
+                <Button TextColor="Green" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" Text="Complete" BackgroundColor="Transparent" BorderColor="Black" BorderWidth="1" FontAttributes="Bold" ImageSource="TickSmall.png" FontSize="Large" x:Name="btnComplete" Clicked="btnComplete_Clicked"/>
+            </StackLayout>
+        </StackLayout>
+    </StackLayout>
+</ContentPage>

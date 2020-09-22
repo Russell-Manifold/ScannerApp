@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="GoodsRecieveingApp.ViewStock"
+             Title="View List">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="" Clicked="ToolbarItem_Clicked"  IconImageSource="home.PNG"/>
+        <ToolbarItem  IconImageSource="save.png" x:Name="btnSave" Clicked="btnSave_Clicked"/>
+    </ContentPage.ToolbarItems>
+    <ContentPage.Content>
+        <StackLayout>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100*" />
+                    <ColumnDefinition Width="15*" />
+                    <ColumnDefinition Width="15*" />
+                    <ColumnDefinition Width="15*" />
+                    <ColumnDefinition Width="15*" />
+                </Grid.ColumnDefinitions>
+                <Label Grid.Row="0" Grid.Column="0" Text="Description" FontSize="15" FontAttributes="Bold"/>
+                <Label Grid.Row="0" Grid.Column="1" Text="Ord" FontSize="15" FontAttributes="Bold"/>
+                <Label Grid.Row="0" Grid.Column="2" Text="Acc" FontSize="15" FontAttributes="Bold"/>
+                <Label Grid.Row="0" Grid.Column="3" Text="Rej" FontSize="15" FontAttributes="Bold"/>
+                <Label Grid.Row="0" Grid.Column="4" Text="BAL" FontSize="15" FontAttributes="Bold"/>
+            </Grid>
+            <ActivityIndicator IsVisible="False" x:Name="LodingIndiactor" IsRunning="True" />
+            <ScrollView BackgroundColor="AliceBlue">
+                <StackLayout>
+                    <ListView x:Name="lstItems" ItemSelected="LstItems_ItemSelected" HasUnevenRows="True">
+                        <ListView.Footer>
+                            <Button x:Name="btnComplete" Text="Complete" BackgroundColor="Transparent" TextColor="Green" FontAttributes="Bold" BorderWidth="1" BorderColor="LightGray" FontSize="Large" Clicked="BtnComplete_Clicked" ImageSource="TickSmall.png" />
+                        </ListView.Footer>
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <ViewCell>
+                                    <StackLayout>
+                                        <StackLayout.Triggers>
+                                            <DataTrigger TargetType="StackLayout" Binding="{Binding Complete}" Value="Yes">
+                                                <Setter Property="BackgroundColor" Value="#53f57e"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="StackLayout" Binding="{Binding Complete}" Value="No">
+                                                <Setter Property="BackgroundColor" Value="#f5a940"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="StackLayout" Binding="{Binding Complete}" Value="NotStarted">
+                                                <Setter Property="BackgroundColor" Value="Transparent"/>
+                                            </DataTrigger>
+                                            <DataTrigger TargetType="StackLayout" Binding="{Binding Complete}" Value="Wrong">
+                                                <Setter Property="BackgroundColor" Value="#f50505"/>
+                                            </DataTrigger>
+                                        </StackLayout.Triggers>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="100*" />
+                                                <ColumnDefinition Width="15*" />
+                                                <ColumnDefinition Width="15*" />
+                                                <ColumnDefinition Width="15*" />
+                                                <ColumnDefinition Width="15*" />
+                                            </Grid.ColumnDefinitions>
+                                            <Label Grid.Row="0" Grid.Column="0" Text="{Binding ItemDesc}" TextColor="Black" FontSize="Medium"/>
+                                            <Label Grid.Row="0" Grid.Column="1" Text="{Binding ItemQty}" HorizontalTextAlignment="Center" TextColor="Black"/>
+                                            <Label Grid.Row="0" Grid.Column="2" Text="{Binding ScanAccQty}" TextColor="Black" HorizontalTextAlignment="Center"/>
+                                            <Label Grid.Row="0" Grid.Column="3" Text="{Binding ScanRejQty}" TextColor="Red" HorizontalTextAlignment="Center"/>
+                                            <Label Grid.Row="0" Grid.Column="4" Text="{Binding Balacnce}" TextColor="Black" HorizontalTextAlignment="Center"/>
+                                            <Label Grid.Row="1" Grid.Column="0" BackgroundColor="LightGray" Text="{Binding Bin,StringFormat='Bin: {0}'}" TextColor="Black">
+                                                <Label.Triggers>
+                                                    <DataTrigger TargetType="Label" Binding="{Binding Bin}" Value="NA">
+                                                        <Setter Property="IsVisible" Value="False"/>
+                                                    </DataTrigger>
+                                                </Label.Triggers>
+                                            </Label>
+                                        </Grid>
+                                    </StackLayout>
+                                </ViewCell>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackLayout>
+            </ScrollView>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

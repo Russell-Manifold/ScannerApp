@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Data.KeyboardContol;assembly=Data"
+             mc:Ignorable="d"
+             Title="Scan Items OUT"
+             x:Class="WHTransfer.OutItems">
+    <ContentPage.Content>
+        <StackLayout>
+            <Image Source="WHTrfOut.png" HorizontalOptions="Fill"/>
+            <Label Text="Scan item barcode(s)" FontSize="Large"/>
+            <controls:ExtendedEntry ShowVirtualKeyboardOnFocus="False" x:Name="txfScannedItem" Completed="txfScannedItem_Completed"/>
+            <ActivityIndicator x:Name="Loading" IsVisible="False" IsRunning="True" Color="Blue"/>
+            <Label Text="Start Scanning..." x:Name="lblLastItem"/>
+            <ListView x:Name="ListViewItems" HasUnevenRows="True" ItemSelected="ListViewItems_ItemSelected">
+                <ListView.Header>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="100*" />
+                            <ColumnDefinition Width="15*" />
+                        </Grid.ColumnDefinitions>
+                        <Label Grid.Row="0" Grid.Column="0" Text="Item Code" TextColor="Black" FontSize="Medium" Padding="5"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="Qty" TextColor="Black" FontSize="Medium" HorizontalOptions="Center"/>
+                    </Grid>
+                </ListView.Header>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <ViewCell>
+                            <StackLayout>
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="100*" />
+                                        <ColumnDefinition Width="15*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Label Grid.Row="0" Grid.Column="0" Text="{Binding ItemDesc}" FontSize="Medium" TextColor="Black" Padding="5"/>
+                                    <Label Grid.Row="0" Grid.Column="1" Text="{Binding ItemQtyOut}" FontSize="Medium" TextColor="Black" HorizontalOptions="Center"/>
+                                </Grid>
+                            </StackLayout>
+                        </ViewCell>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+            <Button Text="Transfer OUT" x:Name="btnComplete" Clicked="BtnComplete_Clicked" ImageSource="TickSmall.png" BackgroundColor="Transparent" TextColor="Green" FontAttributes="Bold" BorderWidth="1" BorderColor="LightGray" FontSize="Large" IsVisible="False" />
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

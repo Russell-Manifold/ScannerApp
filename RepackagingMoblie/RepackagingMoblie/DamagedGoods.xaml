@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Data.KeyboardContol;assembly=Data"
+             mc:Ignorable="d"
+             x:Class="RepackagingMoblie.DamagedGoods"
+             Title="Damaged Goods">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem  IconImageSource="home.PNG" x:Name="btnHome" Clicked="btnHome_Clicked"/>
+    </ContentPage.ToolbarItems>
+    <ContentPage.Content>
+        <StackLayout>
+            <Image Source="ItemAcceptDamaged.png" HorizontalOptions="Fill"></Image>
+            <Label Text="Please scan the Item Code:" FontSize="Large" HorizontalOptions="CenterAndExpand"/>
+            <controls:ExtendedEntry ShowVirtualKeyboardOnFocus="False" x:Name="txfBarcode" TextChanged="TxfBarcode_TextChanged"/>
+            <ActivityIndicator x:Name="Loader" IsRunning="True" IsVisible="False"/>
+            <Label x:Name="lblBarcode"/>
+            <Label x:Name="lblItemDesc"/>
+            <Label x:Name="lblItemQTY"/>
+            <Button Text="Complete" x:Name="btnComplete" Clicked="BtnComplete_Clicked" VerticalOptions="EndAndExpand" ImageSource="TickSmallO.png" BackgroundColor="Transparent" FontSize="Medium" TextColor="Orange"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

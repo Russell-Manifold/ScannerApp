@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Data.KeyboardContol;assembly=Data"
+             mc:Ignorable="d"
+             x:Class="RepackagingMoblie.Singles"
+             Title="Single Items">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem  IconImageSource="home.PNG" x:Name="btnHome" Clicked="btnHome_Clicked"/>
+    </ContentPage.ToolbarItems>
+    <ContentPage.Content>
+        <ScrollView>
+        <StackLayout>
+                <Image Source="repacksing.png" HorizontalOptions="Fill"></Image>
+            <Label Text="Scan repacked the items:" FontSize="Large"/>
+            <controls:ExtendedEntry ShowVirtualKeyboardOnFocus="False" x:Name="txfBarcode" TextChanged="TxfBarcode_TextChanged"/>
+            <ActivityIndicator x:Name="Loader" IsRunning="True" IsVisible="False"/>
+            <Label x:Name="lblBOMInfo" FontSize="Medium" TextColor="red"/>
+            <Label x:Name="lblBarcode" FontSize="Medium"/>
+            <Label x:Name="lblItemDesc"  FontSize="Medium"/>
+            <Label x:Name="lblItemQTY"  FontSize="Medium"/>
+            <Image x:Name="imgProgress"  Source="PLus.PNG" HeightRequest="100" />
+            <Button Text="Complete" x:Name="btnComplete" Clicked="BtnComplete_Clicked" VerticalOptions="EndAndExpand" ImageSource="TickSmall.png" BackgroundColor="Transparent" FontSize="Medium" TextColor="Green"/>
+        </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>

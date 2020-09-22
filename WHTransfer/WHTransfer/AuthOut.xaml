@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Data.KeyboardContol;assembly=Data"
+             mc:Ignorable="d"
+             Title="Authorisation"
+             x:Class="WHTransfer.AuthOut">
+    <ContentPage.Content>
+        <StackLayout VerticalOptions="FillAndExpand">
+            <StackLayout VerticalOptions="Start">
+                <Image Source="WHTrfOut.png" HorizontalOptions="Fill"/>
+                <Label Text="Authorisation User Barcode:" x:Name="lblUserCode" FontSize="Large" VerticalOptions="StartAndExpand"/>
+                <controls:ExtendedEntry ShowVirtualKeyboardOnFocus="False" x:Name="txfUserCode" IsPassword="True" TextChanged="TxfUserCode_TextChanged" VerticalOptions="StartAndExpand"/>
+                <ActivityIndicator IsVisible="False" IsRunning="True" x:Name="Loading"/>
+            </StackLayout>
+            <StackLayout VerticalOptions="EndAndExpand">
+                <Button Text="Complete Transfer Out" x:Name="btnDone" Clicked="BtnDone_Clicked" ImageSource="TickSmall.png" BackgroundColor="Transparent" TextColor="Green" FontAttributes="Bold" BorderWidth="1" BorderColor="LightGray" FontSize="Large" IsVisible="False" VerticalOptions="End"/>
+        </StackLayout>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

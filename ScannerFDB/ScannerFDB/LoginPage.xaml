@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Data.KeyboardContol;assembly=Data"
+             mc:Ignorable="d"
+             x:Class="ScannerFDB.LoginPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem IconImageSource="WHTrfOut.png" x:Name="btnOUTWH" Clicked="btnOUTWH_Clicked"/>
+        <ToolbarItem Text="Connection"></ToolbarItem>
+        <ToolbarItem IconImageSource="WHTrfINGreen.png" x:Name="btnInWH" Clicked="btnInWH_Clicked"/>
+    </ContentPage.ToolbarItems>
+    <ContentPage.Content>
+        <StackLayout>
+            <Image Source="FDBicon1.png"  HeightRequest="80"/>
+            <Label Text="Login" FontSize="Large" VerticalOptions="CenterAndExpand" HorizontalOptions="CenterAndExpand"/>
+            <controls:ExtendedEntry IsPassword="True" ShowVirtualKeyboardOnFocus="False" x:Name="txfUserBarcode" TextChanged="txfUserBarcode_TextChanged" Completed="txfUserBarcode_Completed" VerticalOptions="StartAndExpand" HorizontalTextAlignment="Center" HorizontalOptions="FillAndExpand"/>
+            <ActivityIndicator VerticalOptions="StartAndExpand" x:Name="AccessLoading" IsRunning="True"  IsVisible="False"/>
+            <ImageButton Source="MainIconLogin.png" Clicked="txfUserBarcode_Completed"  VerticalOptions="EndAndExpand" BackgroundColor="Transparent"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage> 

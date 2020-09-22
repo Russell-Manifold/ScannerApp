@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="ScannerFDB.MainPage">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem x:Name="btnAdmin" Text="Admin" Clicked="Button_Clicked_Admin" IconImageSource="settings.png"/>
+    </ContentPage.ToolbarItems>
+    <ScrollView>
+    <StackLayout>
+            <Label x:Name="lblUserLvl" Text="" IsVisible="False" VerticalOptions="FillAndExpand" />
+            <Button x:Name="btnReceive" Text="Goods Receiving" Clicked="Button_Clicked_Goods_Receving" VerticalOptions="EndAndExpand" ImageSource="ReceiveStck.png" BackgroundColor="Transparent" FontSize="Large" />
+            <Button x:Name="btnRepack" Text="Repacking" Clicked="Button_Clicked_Repacking" VerticalOptions="EndAndExpand" ImageSource="repack.png" BackgroundColor="Transparent" FontSize="Large"/>
+            <Button x:Name="BtnInvCount" Text="Inventory Count" Clicked="BtnInvCount_Clicked" VerticalOptions="EndAndExpand" ImageSource="InvCount.png" BackgroundColor="Transparent" FontSize="Large"/>
+            <Button x:Name="btnWhTrf" Text="Warehouse Transfer" Clicked="Button_Clicked_WareHouseTransfer" VerticalOptions="EndAndExpand" ImageSource="WHTrf.png" BackgroundColor="Transparent" FontSize="Large"/>
+            <Button x:Name="btnPickPack" Text="Picking and Packing" Clicked="Button_Clicked" VerticalOptions="EndAndExpand" ImageSource="pickpack.png" BackgroundColor="Transparent" FontSize="Large"/>
+            </StackLayout>
+    </ScrollView>
+</ContentPage>

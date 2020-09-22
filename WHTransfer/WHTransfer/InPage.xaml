@@ -1,0 +1,69 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="clr-namespace:Data.KeyboardContol;assembly=Data"
+             mc:Ignorable="d"
+             Title="Receive Items"
+             x:Class="WHTransfer.InPage">
+    <ContentPage.Content>
+        <StackLayout>
+            <Image Source="WHTrfIN.png" HorizontalOptions="Fill"/>
+            <Label Text="Select Transfer Number To Receive:" FontSize="Large" x:Name="lblTop" HorizontalTextAlignment="Center"/>
+            <Picker x:Name="pickerHeaders" FontSize="Large" SelectedIndexChanged="PickerHeaders_SelectedIndexChanged"/>
+            <ActivityIndicator x:Name="isLoading" IsVisible="False" IsRunning="True"/>
+            <StackLayout IsVisible="False" x:Name="LayoutMain">
+                <Label x:Name="lblInfo" FontSize="Large"/>
+                <Label Text="Scan all items:" FontSize="Large"/>
+                <controls:ExtendedEntry ShowVirtualKeyboardOnFocus="False" x:Name="txfScannedItem" Completed="txfScannedItem_Completed" />
+                <ListView x:Name="ListViewItems" HasUnevenRows="True">
+                     <ListView.Header>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100*" />
+                                <ColumnDefinition Width="30*" />
+                            </Grid.ColumnDefinitions>
+                            <Label Grid.Row="0" Grid.Column="0" Text="Item" TextColor="Black" FontSize="Medium"/>
+                            <Label Grid.Row="0" Grid.Column="1" Text="Qty" TextColor="Black" FontSize="Medium" HorizontalTextAlignment="Center"/>
+                        </Grid>
+                    </ListView.Header>
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <ViewCell>
+                                <StackLayout>
+                                    <StackLayout.Triggers>
+                                        <DataTrigger TargetType="StackLayout" Binding="{Binding ItemQtyIn}" Value="-1">
+                                            <Setter Property="BackgroundColor" Value="#53f57e"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="StackLayout" Binding="{Binding ItemQtyIn}" Value="-2">
+                                            <Setter Property="BackgroundColor" Value="#f5a940"/>
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="StackLayout" Binding="{Binding ItemQtyIn}" Value="0">
+                                            <Setter Property="BackgroundColor" Value="Transparent"/>
+                                        </DataTrigger>
+                                    </StackLayout.Triggers>
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="100*" />
+                                            <ColumnDefinition Width="30*" />
+                                        </Grid.ColumnDefinitions>
+                                        <Label Grid.Row="0" Grid.Column="0" Text="{Binding ItemDesc}" TextColor="Black" FontSize="Medium"/>
+                                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding ItemQtyOut}" TextColor="Black" FontSize="Medium" HorizontalTextAlignment="Center"/>
+                                    </Grid>
+                                </StackLayout>
+                            </ViewCell>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+                <Button Text="Complete" Clicked="btnComplete_Clicked" x:Name="btnComplete" ImageSource="TickSmall.png" BackgroundColor="Transparent" TextColor="Green" FontAttributes="Bold" BorderWidth="1" BorderColor="LightGray" FontSize="Large"/>
+            </StackLayout>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

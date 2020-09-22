@@ -1,0 +1,44 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             xmlns:controls="clr-namespace:Data.KeyboardContol;assembly=Data"
+             x:Class="GoodsRecieveingApp.ScanRej"
+             Title="Reject Stock">
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="" Clicked="ToolbarItem_Clicked"  IconImageSource="ViewAll.PNG"/>
+    </ContentPage.ToolbarItems>
+    <ContentPage.Content>
+        <StackLayout>
+            <Label x:Name="lblMainRej" Text="{Binding name}" FontSize="20" TextColor="Orange" FontAttributes="Bold"/>
+            <Label Text= "Scan Barcode" FontSize="20" TextDecorations="Underline" Padding="10" TextColor="Orange" FontAttributes="Bold"/>
+            <controls:ExtendedEntry ShowVirtualKeyboardOnFocus="False" MaxLength="14" HorizontalOptions="FillAndExpand" Completed="txfRejCode_Completed" x:Name="txfRejCode" />
+            <Label HorizontalOptions="CenterAndExpand" FontAttributes="Bold" x:Name="lblitemDescRej" FontSize="23"/>
+            <Label HorizontalOptions="CenterAndExpand" FontAttributes="Bold" x:Name="lblBarCode" FontSize="20" VerticalOptions="Start"/>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="100*"/>
+                    <ColumnDefinition Width="50*"/>
+                </Grid.ColumnDefinitions>
+                <Label Text="Order Qty" FontSize="20" FontAttributes="Bold" Grid.Column="0" Grid.Row="0" TextColor="Orange"/>
+                <Label Text="Scan Qty" FontSize="20" FontAttributes="Bold" Grid.Column="0" Grid.Row="1" TextColor="Orange"/>
+                <Label Text="Balance" FontSize="20" FontAttributes="Bold" Grid.Column="0" Grid.Row="2" TextColor="Orange"/>
+                <Label Text="Bin" FontSize="18" Grid.Column="0" Grid.Row="3"/>
+                <Label x:Name="lblOrderQTY" FontSize="20" Grid.Column="1" Grid.Row="0"/>
+                <Label x:Name="lblScanQTY" FontSize="20" Grid.Column="1" Grid.Row="1"/>
+                <Label x:Name="lblBalance" FontSize="20" Grid.Column="1" Grid.Row="2"/>
+                <Label x:Name="lblBin" FontSize="20" Grid.Column="1" Grid.Row="3"/>
+                <Button x:Name="btnEntry" ImageSource="ViewAll.PNG" HeightRequest="60" WidthRequest="60" BackgroundColor="Transparent" IsVisible="false"  HorizontalOptions="Start" Grid.ColumnSpan="2" Grid.Row="4" Clicked="btnEntry_Clicked"/>
+            </Grid>
+            <Button x:Name="PicImage" HeightRequest="150" WidthRequest="150" Clicked="PicImage_Clicked" IsVisible="False" BackgroundColor="Transparent"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>
