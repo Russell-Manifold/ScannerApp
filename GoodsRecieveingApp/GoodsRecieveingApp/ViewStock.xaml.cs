@@ -91,19 +91,33 @@ namespace GoodsRecieveingApp
             await App.Database.Update(Orig.FirstOrDefault());
             return true;
         }
+        private async Task InsertUser(string user)
+        {
+            RestSharp.RestClient client = new RestSharp.RestClient();
+            client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath);
+            {
+                var Request = new RestSharp.RestRequest("DocumentSQLConnection", RestSharp.Method.POST);
+                Request.Resource = "UPDATE tblTempDocHeader SET AuthUser='" + user + "' WHERE DocNum='" + docCode + "'";
+                var cancellationTokenSource = new CancellationTokenSource();
+                var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+            }
+        }
         private async void BtnComplete_Clicked(object sender, EventArgs e)
         {
             btnComplete.IsEnabled = false;
             message.DisplayMessage("Saving information!", true);
             if (await Check())
             {
-                if (await GRVmodule())
+                string uName = "";
+                while (uName == "" || uName == null)
                 {
-                    if (!await SendToPastel())
-                    {
-                        Vibration.Vibrate();
-                        message.DisplayMessage("Error! - Could not Complete", true);
-                    }
+                    uName = await DisplayPromptAsync("Scan user barcode", "Scan Auth barcode", "OK");
+                }
+                await InsertUser(uName);
+                if (!await SendToPastel())
+                {
+                    Vibration.Vibrate();
+                    message.DisplayMessage("Error! - Could not Complete", true);
                 }
                 message.DisplayMessage("Complete!!!", true);               
             }
@@ -131,25 +145,28 @@ namespace GoodsRecieveingApp
         }
         private async Task MarkAndComplete()
         {
-            await MarAsRecieved();
-            if (await SaveData())
+            if (await SavePart())
             {
-                await DisplayAlert("Complete!", "All the parts have been saved", "OK");
-                if (Navigation.NavigationStack.Count == 4)
+                await MarAsRecieved();
+                if (await SaveData())
                 {
-                    Navigation.RemovePage(Navigation.NavigationStack[2]);
+                    await DisplayAlert("Complete!", "All the parts have been saved", "OK");
+                    if (Navigation.NavigationStack.Count == 4)
+                    {
+                        Navigation.RemovePage(Navigation.NavigationStack[2]);
+                    }
+                    else
+                    {
+                        Navigation.RemovePage(Navigation.NavigationStack[2]);
+                        Navigation.RemovePage(Navigation.NavigationStack[3]);
+                        await Navigation.PopAsync();
+                    }
                 }
                 else
                 {
-                    Navigation.RemovePage(Navigation.NavigationStack[2]);
-                    Navigation.RemovePage(Navigation.NavigationStack[3]);
-                    await Navigation.PopAsync();
+                    Vibration.Vibrate();
+                    message.DisplayMessage("Error!!! Could Not Save data in database!", true);
                 }
-            }
-            else
-            {
-                Vibration.Vibrate();
-                message.DisplayMessage("Error!!! Could Not Save data in database!", true);
             }
         }
         async Task MarAsRecieved()
@@ -157,7 +174,7 @@ namespace GoodsRecieveingApp
             List<DocLine> lines = (await App.Database.GetSpecificDocsAsync(docCode)).Where(x => !x.GRN).ToList();
             foreach (string itemCode in lines.Select(x => x.ItemCode).Distinct())
             {
-                if (lines.Where(x => !x.GRN && x.ItemCode == itemCode && (x.ScanAccQty > 0 || x.ScanRejQty > 0)).Count() > 0)
+                if (lines.Where(x => x.ItemCode == itemCode && (x.ScanAccQty > 0 || x.ScanRejQty > 0)).Count() > 0)
                 {
                     DocLine GRVItem = (await App.Database.GetSpecificDocsAsync(docCode)).Where(x => x.GRN && x.ItemCode == itemCode).FirstOrDefault();
                     if (GRVItem != null)
@@ -182,7 +199,6 @@ namespace GoodsRecieveingApp
                     }
                 }
             }
-            List<DocLine> linesds = await App.Database.GetSpecificDocsAsync(docCode);
         }
         async Task<bool> CanPartRecieve()
         {
@@ -195,6 +211,33 @@ namespace GoodsRecieveingApp
                 }
             }
             return false;
+        }
+        async Task<string> CreatePartDocLines(List<DocLine> d)
+        {
+            DataTable det = await GetDocDetails(docCode);
+            if (det == null)
+            {
+                return "";
+            }
+            string s = "", GLCode = "";
+            foreach (DocLine docline in d)
+            {
+                if (docline.ScanAccQty > 0)
+                {
+                    DataRow CurrentRow = det.Select($"ItemCode='{docline.ItemCode}'").FirstOrDefault();
+                    GLCode = await GetGlCode(docline.ItemCode, MainPage.ACCWH);
+                    if (CurrentRow != null)
+                        s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{GLCode}|{CurrentRow["ItemDesc"].ToString()}|6|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
+                }
+                if (docline.ScanRejQty > 0)
+                {
+                    DataRow CurrentRow = det.Select($"ItemCode=={docline.ItemCode}").FirstOrDefault();
+                    GLCode = await GetGlCode(docline.ItemCode, MainPage.REJWH);
+                    if (CurrentRow != null)
+                        s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{GLCode}|{CurrentRow["ItemDesc"].ToString()}|6|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";
+                }
+            }
+            return s;
         }
         async Task<DataTable> GetDocDetails(string DocNum)
         {//http://192.168.0.100/FDBAPI/api/GetFullDocDetails/GET?qrystr=ACCHISTL|6|PO100330|106
@@ -214,6 +257,29 @@ namespace GoodsRecieveingApp
                 }
             }
             return null;
+        }
+        private async Task<bool> SavePart()
+        {
+            List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode)).Where(x => !x.GRN).ToList();
+            string docL = await CreatePartDocLines(docs);
+            string docH = await CreateDocHeader();
+            if (docL == "" || docH == "")
+                return false;
+            RestClient client = new RestClient();
+            string path = "AddDocument";
+            client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
+            {
+                string str = $"GET?DocHead={docH}&Docline={docL}&DocType=107";
+                var Request = new RestRequest(str, Method.POST);
+                var cancellationTokenSource = new CancellationTokenSource();
+                var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+                if (res.IsSuccessful && res.Content.Contains("0"))
+                {
+                    await DisplayAlert("Complete!", "Request sent to pastel." + Environment.NewLine + res.Content.Split('|')[1].ToString().Substring(0, res.Content.Split('|')[1].Length - 1) + " successfully created", "OK");
+                    return true;
+                }
+            }
+            return false;
         }
         async Task<string> CreateDocLines(List<DocLine> d)
         {
@@ -311,15 +377,9 @@ namespace GoodsRecieveingApp
         private async Task<bool> Check()
         {
             List<DocLine> lines = await App.Database.GetSpecificDocsAsync(docCode);
-            foreach (DocLine dc in lines.Where(x => x.ItemQty != 0))
+            foreach (string st in lines.Select(x => x.ItemCode).Distinct())
             {
-                foreach (DocLine d in lines.Where(x => x.ItemQty == 0 && x.ItemCode == dc.ItemCode))
-                {
-                    dc.ScanAccQty += d.ScanAccQty;
-                    dc.ScanRejQty += d.ScanRejQty;
-                }
-                dc.Balacnce += dc.ScanAccQty + dc.ScanRejQty;
-                if (dc.Balacnce != dc.ItemQty)
+                if (lines.Where(x => x.ItemCode == st && !x.GRN && x.ItemQty != 0).FirstOrDefault().ItemQty != (lines.Where(x => x.ItemCode == st).Sum(x => x.ScanAccQty) + lines.Where(x => x.ItemCode == st).Sum(x => x.ScanRejQty)))
                 {
                     return false;
                 }
@@ -492,9 +552,18 @@ namespace GoodsRecieveingApp
                     }
                 }                  
         }
-        private async Task<bool> GRVmodule() {
-            config = await GoodsRecieveingApp.App.Database.GetConfig();
-            return config.GRVActive;
+        private async Task<bool> GRVmodule()
+        {
+            try
+            {
+                config = await GoodsRecieveingApp.App.Database.GetConfig();
+                return config.GRVActive;
+            }
+            catch
+            {
+                return false;
+            }
+
         }
     }
 }
