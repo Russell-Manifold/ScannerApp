@@ -43,6 +43,8 @@ namespace PickAndPack
         {
             if (GoodsRecieveingApp.MainPage.AuthDispatch)
             {
+                btnComplete.IsEnabled = false;
+                message.DisplayMessage("Saving information!", true);
                 await SendToPastel();
 				if (ErrorDocs.Count>0)
 				{

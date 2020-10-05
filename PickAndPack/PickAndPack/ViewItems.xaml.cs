@@ -10,6 +10,7 @@ using Xamarin.Forms.Xaml;
 using RestSharp;
 using System.Threading;
 using System.Data;
+using Data.Message;
 
 namespace PickAndPack
 {
@@ -17,6 +18,7 @@ namespace PickAndPack
     public partial class ViewItems : ContentPage
     {
         string docCode = "";
+        IMessage message = DependencyService.Get<IMessage>();
         DeviceConfig config = new DeviceConfig();
         public ViewItems(string dl)
         {
@@ -145,6 +147,8 @@ namespace PickAndPack
         }
         private async Task<bool> SendToPastel()
         {
+            btnComplete.IsEnabled = false;
+            message.DisplayMessage("Saving information!", true);
             List<DocLine> docs = await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode);
             DataTable det = await GetDocDetails(docCode);
             if (det == null)
@@ -173,7 +177,7 @@ namespace PickAndPack
 				}
 				else if(res.IsSuccessful &&res.Content.Contains("99"))
 				{
-                    await DisplayAlert("Error!", "Your document could not be sent due to"+Environment.NewLine+res.Content, "OK");
+                    await DisplayAlert("Error!", "Your document could not be sent due to "+Environment.NewLine+res.Content, "OK");
                     return true;
                 }
             }
