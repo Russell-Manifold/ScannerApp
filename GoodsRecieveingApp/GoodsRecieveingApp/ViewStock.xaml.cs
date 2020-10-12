@@ -219,22 +219,38 @@ namespace GoodsRecieveingApp
             {
                 return "";
             }
-            string s = "", GLCode = "";
+            string s = "", txtype = "00"; 
             foreach (DocLine docline in d)
             {
                 if (docline.ScanAccQty > 0)
                 {
                     DataRow CurrentRow = det.Select($"ItemCode='{docline.ItemCode}'").FirstOrDefault();
-                    GLCode = await GetGlCode(docline.ItemCode, MainPage.ACCWH);
+                    if (CurrentRow["TaxType"].ToString().Length == 1)
+                    {
+                        txtype = "0" + CurrentRow["TaxType"].ToString();
+                    }
+                    else
+                    {
+                        txtype = CurrentRow["TaxType"].ToString();
+                    }
+                    //GLCode = await GetGlCode(docline.ItemCode, MainPage.ACCWH);
                     if (CurrentRow != null)
-                        s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{GLCode}|{CurrentRow["ItemDesc"].ToString()}|6|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
+                        s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
                 }
                 if (docline.ScanRejQty > 0)
                 {
                     DataRow CurrentRow = det.Select($"ItemCode=={docline.ItemCode}").FirstOrDefault();
-                    GLCode = await GetGlCode(docline.ItemCode, MainPage.REJWH);
+                    if (CurrentRow["TaxType"].ToString().Length == 1)
+                    {
+                        txtype = "0" + CurrentRow["TaxType"].ToString();
+                    }
+                    else
+                    {
+                        txtype = CurrentRow["TaxType"].ToString();
+                    }
+                    // GLCode = await GetGlCode(docline.ItemCode, MainPage.REJWH);
                     if (CurrentRow != null)
-                        s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{GLCode}|{CurrentRow["ItemDesc"].ToString()}|6|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";
+                        s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";
                 }
             }
             return s;
@@ -243,6 +259,7 @@ namespace GoodsRecieveingApp
         {//http://192.168.0.100/FDBAPI/api/GetFullDocDetails/GET?qrystr=ACCHISTL|6|PO100330|106
             RestClient client = new RestClient();
             string path = "GetFullDocDetails";
+            //string path = "GetDocument";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
             {
                 string str = $"GET?qrystr=ACCHISTL|6|{DocNum}|106";
@@ -288,22 +305,37 @@ namespace GoodsRecieveingApp
             {
                 return "";
             }
-            string s = "";
+            string s = "", txtype = "00";
             foreach (DocLine docline in d)
             {
                 if (docline.ScanAccQty > 0)
                 {
                     DataRow CurrentRow = det.Select($"ItemCode='{docline.ItemCode}'").FirstOrDefault();
-                    //GLCode = await GetGlCode(docline.ItemCode, MainPage.ACCWH);
+                    // set tax type to 2 chars  
+                    if (CurrentRow["TaxType"].ToString().Length == 1)
+                    {
+                        txtype = "0" + CurrentRow["TaxType"].ToString();
+                    }
+                    else 
+                    {
+                        txtype = CurrentRow["TaxType"].ToString();
+                    }
                     if (CurrentRow != null)
-                        s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode}|{CurrentRow["ItemDesc"].ToString()}|4|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
+                        s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40,' ')}|4|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
                 }
                 if (docline.ScanRejQty > 0)
                 {
                     DataRow CurrentRow = det.Select($"ItemCode=={docline.ItemCode}").FirstOrDefault();
-                    //GLCode = await GetGlCode(docline.ItemCode, MainPage.REJWH);
+                    if (CurrentRow["TaxType"].ToString().Length == 1)
+                    {
+                        txtype = "0" + CurrentRow["TaxType"].ToString();
+                    }
+                    else
+                    {
+                        txtype = CurrentRow["TaxType"].ToString();
+                    }
                     if (CurrentRow != null)
-                        s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode}|{CurrentRow["ItemDesc"].ToString()}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";
+                        s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";
                 }
             }
             //old code

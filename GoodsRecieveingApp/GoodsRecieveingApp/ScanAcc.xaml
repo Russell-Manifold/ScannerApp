@@ -42,7 +42,7 @@
                 <Label x:Name="lblBalance" FontSize="18" Grid.Column="1" Grid.Row="5"/>
                 <Label x:Name="lblBin" FontSize="18" Grid.Column="1" Grid.Row="6"/>
             </Grid>
-            <Button x:Name="PicImage" HeightRequest="60" WidthRequest="60" Clicked="PicImage_Clicked" IsVisible="False" BackgroundColor="Transparent"/>
+            <Button x:Name="PicImage" HeightRequest="60" WidthRequest="60" Clicked="PicImage_Clicked" IsVisible="False" BackgroundColor="Transparent" Text="Save Item Line"/>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

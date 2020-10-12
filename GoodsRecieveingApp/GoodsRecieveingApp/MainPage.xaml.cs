@@ -27,13 +27,13 @@ namespace GoodsRecieveingApp
         //public static string APIPathIN = "https://manifoldsa.co.za/FDBAPI/api/";
         // public static string APIPathOUT = "https://manifoldsa.co.za/FDBAPI/api/";
 
-        public static string APIPath = "http://172.16.26.2/api/";
-        public static string APIPathIN = "http://172.16.26.2/api/";
-        public static string APIPathOUT = "http://172.16.26.2/api/";
-
-        //public static string APIPath = "http://192.168.0.111/FDBAPI/api/";
-        // public static string APIPathIN = "http://192.168.0.111/FDBAPI/api/";
-        //public static string APIPathOUT = "http://192.168.0.111/FDBAPI/api/";
+        //public static string APIPath = "http://172.16.26.2/api/";
+        //public static string APIPathIN = "http://172.16.26.2/api/";
+        //public static string APIPathOUT = "http://172.16.26.2/api/";
+       
+        public static string APIPath = "http://192.168.0.111/FDBAPI/api/";
+        public static string APIPathIN = "http://192.168.0.111/FDBAPI/api/";
+        public static string APIPathOUT = "http://192.168.0.111/FDBAPI/api/";
         public static string UserName = "";
         public static string ACCWH = "";
         public static string REJWH = "";
@@ -57,6 +57,7 @@ namespace GoodsRecieveingApp
         IMessage message = DependencyService.Get<IMessage>();
         DeviceConfig config = new DeviceConfig();
         private ExtendedEntry _currententry;
+       
         public MainPage()
         {
             InitializeComponent();
