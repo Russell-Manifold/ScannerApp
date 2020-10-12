@@ -24,6 +24,7 @@ namespace GoodsRecieveingApp
         string lastItem;
         DeviceConfig config = new DeviceConfig();
         bool wrong;
+        bool EditsMade=false;
         IMessage message = DependencyService.Get<IMessage>();
         private ExtendedEntry _currententry;
         public ScanAcc(DocLine d)
@@ -36,15 +37,18 @@ namespace GoodsRecieveingApp
         protected async override void OnDisappearing()
         {
             base.OnDisappearing();
-            if (await SaveData())
+            if (EditsMade)
             {
-                message.DisplayMessage("All data Saved", true);
-            }
-            else
-            {
-                Vibration.Vibrate();
-                message.DisplayMessage("Error!!! Could Not Save!", true);
-            }
+                if (await SaveData())
+                {
+                    message.DisplayMessage("All data Saved", true);
+                }
+                else
+                {
+                    Vibration.Vibrate();
+                    message.DisplayMessage("Error!!! Could Not Save!", true);
+                }
+            }           
         }
         private async Task<bool> SaveData()
         {
@@ -61,28 +65,28 @@ namespace GoodsRecieveingApp
                 t1.Columns.Add("ScanRejQty");
                 t1.Columns.Add("PalletNumber");
                 t1.Columns.Add("GRV");
-                docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(UsingDoc.DocNum)).Where(x => x.ItemQty == 0 || x.GRN).ToList();
+                docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(UsingDoc.DocNum)).Where(x => x.ItemQty == 0).ToList();
                 if (docs.Count == 0)
                     return true;
                 foreach (string str in docs.Select(x => x.ItemCode).Distinct())
                 {
-                    DocLine currentGRV = (await App.Database.GetSpecificDocsAsync(UsingDoc.DocNum)).Where(x => x.GRN && x.ItemCode == str).FirstOrDefault();
-                    if (currentGRV != null && await GRVmodule())
-                    {
-                        row = t1.NewRow();
-                        row["DocNum"] = UsingDoc.DocNum;
-                        row["ItemBarcode"] = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(UsingDoc.DocNum)).Where(x => x.ItemCode == str && x.ItemQty != 0).FirstOrDefault().ItemBarcode;
-                        row["ScanAccQty"] = currentGRV.ScanAccQty;
-                        row["Balance"] = 0;
-                        row["ScanRejQty"] = currentGRV.ScanRejQty;
-                        row["PalletNumber"] = 0;
-                        row["GRV"] = true;
-                        t1.Rows.Add(row);
-                    }
-                    else if (currentGRV != null && !await GRVmodule())
-                    {
-                        await DisplayAlert("Please set up GRV in the settings", "Error", "OK");
-                    }
+                    //DocLine currentGRV = (await App.Database.GetSpecificDocsAsync(UsingDoc.DocNum)).Where(x => x.GRN && x.ItemCode == str).FirstOrDefault();
+                    //if (currentGRV != null && await GRVmodule())
+                    //{
+                    //    row = t1.NewRow();
+                    //    row["DocNum"] = UsingDoc.DocNum;
+                    //    row["ItemBarcode"] = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(UsingDoc.DocNum)).Where(x => x.ItemCode == str && x.ItemQty != 0).FirstOrDefault().ItemBarcode;
+                    //    row["ScanAccQty"] = currentGRV.ScanAccQty;
+                    //    row["Balance"] = 0;
+                    //    row["ScanRejQty"] = currentGRV.ScanRejQty;
+                    //    row["PalletNumber"] = 0;
+                    //    row["GRV"] = true;
+                    //    t1.Rows.Add(row);
+                    //}
+                    //else if (currentGRV != null && !await GRVmodule())
+                    //{
+                    //    await DisplayAlert("Please set up GRV in the settings", "Error", "OK");
+                    //}
                     List<DocLine> CurrItems = (await App.Database.GetSpecificDocsAsync(UsingDoc.DocNum)).Where(x => !x.GRN && x.ItemCode == str && x.ItemQty == 0).ToList();
                     if (CurrItems.Count() > 0)
                     {
@@ -112,6 +116,7 @@ namespace GoodsRecieveingApp
                 Request.AddJsonBody(myds);
                 var cancellationTokenSource = new CancellationTokenSource();
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+                //var res =  client.Execute(Request);
                 if (res.IsSuccessful && res.Content.Contains("COMPLETE"))
                 {
                     return true;
@@ -124,14 +129,23 @@ namespace GoodsRecieveingApp
         }
         private async Task<bool> GRVmodule()
         {
-            config = await GoodsRecieveingApp.App.Database.GetConfig();
-            return config.GRVActive;
+            try
+            {
+                var confifg = await GoodsRecieveingApp.App.Database.GetConfig();
+                return confifg.GRVActive;
+            }
+            catch(Exception ex)
+            {
+                return false;
+            }
+            
         }
         protected async override void OnAppearing()
         {
             base.OnAppearing();
             currentDocs = await App.Database.GetSpecificDocsAsync(UsingDoc.DocNum);
             txfAccCode.Focus();
+            EditsMade = false;
         }
         private async void EntryAcc_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -331,14 +345,16 @@ namespace GoodsRecieveingApp
             return true;
         }
 		private async void txfAccCode_Completed(object sender, EventArgs e)
-		{           
+		{               
             //BOM Barcode
             if (txfAccCode.Text.Length > 0)
             {
+                EditsMade = true;
                 //txfAccCode.Text=MainPage.CalculateCheckDigit(txfAccCode.Text);
                 lblBarCode.Text = txfAccCode.Text;
                 if (txfAccCode.Text.Length != 13 && txfAccCode.Text.Length != 12)
                 {
+
                     BOMItem bi;
                     try
                     {

@@ -23,6 +23,7 @@ namespace GoodsRecieveingApp
         DeviceConfig config = new DeviceConfig();
         string lastItem;
         bool wrong;
+        bool EditsMade = false;
         IMessage message = DependencyService.Get<IMessage>();
         private ExtendedEntry _currententry;
         public ScanRej(DocLine d)
@@ -42,6 +43,7 @@ namespace GoodsRecieveingApp
             base.OnAppearing();
             txfRejCode.Focus();
             currentDocs = await App.Database.GetSpecificDocsAsync(UsingDoc.DocNum);
+            EditsMade = false;
         }
         private async void EntryRej_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -214,8 +216,8 @@ namespace GoodsRecieveingApp
 		private async void txfRejCode_Completed(object sender, EventArgs e)
 		{
             lblBarCode.Text = txfRejCode.Text;
-           // txfRejCode.Text = txfRejCode.Text;
-
+            // txfRejCode.Text = txfRejCode.Text;
+            EditsMade = true;
             //BOM Barcode
             if (txfRejCode.Text.Length == 14 || txfRejCode.Text.Length == 8)
             {
@@ -293,14 +295,17 @@ namespace GoodsRecieveingApp
 		protected async override void OnDisappearing()
 		{
 			base.OnDisappearing();
-            if (await SaveData())
+            if (EditsMade)
             {
-                message.DisplayMessage("All data Saved", true);
-            }
-            else
-            {
-                Vibration.Vibrate();
-                message.DisplayMessage("Error!!! Could Not Save!", true);
+                if (await SaveData())
+                {
+                    message.DisplayMessage("All data Saved", true);
+                }
+                else
+                {
+                    Vibration.Vibrate();
+                    message.DisplayMessage("Error!!! Could Not Save!", true);
+                }
             }
         }
         private async Task<bool> SaveData()
@@ -381,8 +386,15 @@ namespace GoodsRecieveingApp
         }
         private async Task<bool> GRVmodule()
         {
-            config = await GoodsRecieveingApp.App.Database.GetConfig();
-            return config.GRVActive;
+            try
+            {
+                var confifg = await GoodsRecieveingApp.App.Database.GetConfig();
+                return confifg.GRVActive;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
     }
 }

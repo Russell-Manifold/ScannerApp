@@ -119,6 +119,20 @@ namespace GoodsRecieveingApp
                     Vibration.Vibrate();
                     message.DisplayMessage("Error! - Could not Complete" , true);
                 }
+                else
+                {
+                    await DisplayAlert("Complete!", "The order has been saved", "OK");
+                    if (Navigation.NavigationStack.Count == 4)
+                    {
+                        Navigation.RemovePage(Navigation.NavigationStack[2]);
+                    }
+                    else
+                    {
+                        Navigation.RemovePage(Navigation.NavigationStack[2]);
+                        Navigation.RemovePage(Navigation.NavigationStack[3]);
+                        await Navigation.PopAsync();
+                    }
+                }
                 message.DisplayMessage("Complete!!!", true);               
             }
             else
@@ -214,43 +228,51 @@ namespace GoodsRecieveingApp
         }
         async Task<string> CreatePartDocLines(List<DocLine> d)
         {
+            List<string> doneItems = new List<string>();
             DataTable det = await GetDocDetails(docCode);
             if (det == null)
             {
                 return "";
             }
-            string s = "", txtype = "00"; 
+            string s = "", txtype = "00";
             foreach (DocLine docline in d)
             {
-                if (docline.ScanAccQty > 0)
+                if (!doneItems.Contains(docline.ItemBarcode))
                 {
-                    DataRow CurrentRow = det.Select($"ItemCode='{docline.ItemCode}'").FirstOrDefault();
-                    if (CurrentRow["TaxType"].ToString().Length == 1)
+                    docline.ScanAccQty = d.Where(x => x.ItemBarcode == docline.ItemBarcode && !x.GRN).Sum(x => x.ScanAccQty);
+                    docline.ScanRejQty = d.Where(x => x.ItemBarcode == docline.ItemBarcode && !x.GRN).Sum(x => x.ScanRejQty);
+
+                    if (docline.ScanAccQty > 0)
                     {
-                        txtype = "0" + CurrentRow["TaxType"].ToString();
+                        DataRow CurrentRow = det.Select($"ItemCode='{docline.ItemCode}'").FirstOrDefault();
+                        if (CurrentRow["TaxType"].ToString().Length == 1)
+                        {
+                            txtype = "0" + CurrentRow["TaxType"].ToString();
+                        }
+                        else
+                        {
+                            txtype = CurrentRow["TaxType"].ToString();
+                        }
+                        //GLCode = await GetGlCode(docline.ItemCode, MainPage.ACCWH);
+                        if (CurrentRow != null)
+                            s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
                     }
-                    else
+                    if (docline.ScanRejQty > 0)
                     {
-                        txtype = CurrentRow["TaxType"].ToString();
+                        DataRow CurrentRow = det.Select($"ItemCode=={docline.ItemCode}").FirstOrDefault();
+                        if (CurrentRow["TaxType"].ToString().Length == 1)
+                        {
+                            txtype = "0" + CurrentRow["TaxType"].ToString();
+                        }
+                        else
+                        {
+                            txtype = CurrentRow["TaxType"].ToString();
+                        }
+                        // GLCode = await GetGlCode(docline.ItemCode, MainPage.REJWH);
+                        if (CurrentRow != null)
+                            s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";
                     }
-                    //GLCode = await GetGlCode(docline.ItemCode, MainPage.ACCWH);
-                    if (CurrentRow != null)
-                        s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
-                }
-                if (docline.ScanRejQty > 0)
-                {
-                    DataRow CurrentRow = det.Select($"ItemCode=={docline.ItemCode}").FirstOrDefault();
-                    if (CurrentRow["TaxType"].ToString().Length == 1)
-                    {
-                        txtype = "0" + CurrentRow["TaxType"].ToString();
-                    }
-                    else
-                    {
-                        txtype = CurrentRow["TaxType"].ToString();
-                    }
-                    // GLCode = await GetGlCode(docline.ItemCode, MainPage.REJWH);
-                    if (CurrentRow != null)
-                        s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";
+                    doneItems.Add(docline.ItemBarcode);
                 }
             }
             return s;
@@ -300,6 +322,7 @@ namespace GoodsRecieveingApp
         }
         async Task<string> CreateDocLines(List<DocLine> d)
         {
+            List<string> doneItems = new List<string>();
             DataTable det = await GetDocDetails(docCode);
             if (det==null)
             {
@@ -308,35 +331,42 @@ namespace GoodsRecieveingApp
             string s = "", txtype = "00";
             foreach (DocLine docline in d)
             {
-                if (docline.ScanAccQty > 0)
+                if (!doneItems.Contains(docline.ItemBarcode))
                 {
-                    DataRow CurrentRow = det.Select($"ItemCode='{docline.ItemCode}'").FirstOrDefault();
-                    // set tax type to 2 chars  
-                    if (CurrentRow["TaxType"].ToString().Length == 1)
+                    docline.ScanAccQty = d.Where(x => x.ItemBarcode == docline.ItemBarcode && !x.GRN).Sum(x => x.ScanAccQty);
+                    docline.ScanRejQty = d.Where(x => x.ItemBarcode == docline.ItemBarcode && !x.GRN).Sum(x => x.ScanRejQty);
+                    if (docline.ScanAccQty > 0)
                     {
-                        txtype = "0" + CurrentRow["TaxType"].ToString();
+                        DataRow CurrentRow = det.Select($"ItemCode='{docline.ItemCode}'").FirstOrDefault();
+                        // set tax type to 2 chars  
+                        if (CurrentRow["TaxType"].ToString().Length == 1)
+                        {
+                            txtype = "0" + CurrentRow["TaxType"].ToString();
+                        }
+                        else
+                        {
+                            txtype = CurrentRow["TaxType"].ToString();
+                        }
+                        if (CurrentRow != null)
+                            s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
                     }
-                    else 
-                    {
-                        txtype = CurrentRow["TaxType"].ToString();
+                    if (docline.ScanRejQty > 0)
+                    {                       
+                        DataRow CurrentRow = det.Select($"ItemCode=={docline.ItemCode}").FirstOrDefault();
+                        if (CurrentRow["TaxType"].ToString().Length == 1)
+                        {
+                            txtype = "0" + CurrentRow["TaxType"].ToString();
+                        }
+                        else
+                        {
+                            txtype = CurrentRow["TaxType"].ToString();
+                        }
+                        if (CurrentRow != null)
+                            s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";                 
                     }
-                    if (CurrentRow != null)
-                        s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40,' ')}|4|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
-                }
-                if (docline.ScanRejQty > 0)
-                {
-                    DataRow CurrentRow = det.Select($"ItemCode=={docline.ItemCode}").FirstOrDefault();
-                    if (CurrentRow["TaxType"].ToString().Length == 1)
-                    {
-                        txtype = "0" + CurrentRow["TaxType"].ToString();
-                    }
-                    else
-                    {
-                        txtype = CurrentRow["TaxType"].ToString();
-                    }
-                    if (CurrentRow != null)
-                        s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";
-                }
+                    doneItems.Add(docline.ItemBarcode);
+
+                }              
             }
             //old code
             //foreach (string CODE in d.Select(x=>x.ItemCode).Distinct())
@@ -385,7 +415,7 @@ namespace GoodsRecieveingApp
         }
         private async Task<bool> SendToPastel()
         {
-            List<DocLine> docs = await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode);
+            List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode)).Where(x => !x.GRN).ToList(); 
             string docL = await CreateDocLines(docs);
             string docH = await CreateDocHeader();
             if (docL == ""||docH=="")
@@ -523,13 +553,13 @@ namespace GoodsRecieveingApp
                 t1.Columns.Add("ScanRejQty");
                 t1.Columns.Add("PalletNumber");
                 t1.Columns.Add("GRV");
-                docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode)).Where(x => x.ItemQty == 0||x.GRN).ToList();
+                docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode)).Where(x => x.ItemQty == 0 || x.GRN).ToList();
                 if (docs.Count == 0)
                     return true;
                 foreach (string str in docs.Select(x => x.ItemCode).Distinct())
                 {
-                    DocLine currentGRV = (await App.Database.GetSpecificDocsAsync(docCode)).Where(x =>x.GRN&& x.ItemCode == str).FirstOrDefault();
-                    if (currentGRV != null&&await GRVmodule())
+                    DocLine currentGRV = (await App.Database.GetSpecificDocsAsync(docCode)).Where(x => x.GRN && x.ItemCode == str).FirstOrDefault();
+                    if (currentGRV != null && await GRVmodule())
                     {
                         row = t1.NewRow();
                         row["DocNum"] = docCode;
@@ -541,13 +571,13 @@ namespace GoodsRecieveingApp
                         row["GRV"] = true;
                         t1.Rows.Add(row);
                     }
-                    else if (currentGRV!=null&&!await GRVmodule())
-					{
-                        await DisplayAlert("Please set up GRV in the settings","Error","OK");
-					}
-                    List<DocLine> CurrItems = (await App.Database.GetSpecificDocsAsync(docCode)).Where(x => !x.GRN && x.ItemCode == str&&x.ItemQty==0).ToList();
-					if (CurrItems.Count()>0)
-					{
+                    else if (currentGRV != null && !await GRVmodule())
+                    {
+                        await DisplayAlert("Please set up GRV in the settings", "Error", "OK");
+                    }
+                    List<DocLine> CurrItems = (await App.Database.GetSpecificDocsAsync(docCode)).Where(x => !x.GRN && x.ItemCode == str && x.ItemQty == 0).ToList();
+                    if (CurrItems.Count() > 0)
+                    {
                         row = t1.NewRow();
                         row["DocNum"] = docs.FirstOrDefault().DocNum;
                         row["ItemBarcode"] = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode)).Where(x => x.ItemCode == str && x.ItemQty != 0).FirstOrDefault().ItemBarcode;
@@ -557,7 +587,7 @@ namespace GoodsRecieveingApp
                         row["PalletNumber"] = 0;
                         row["GRV"] = false;
                         t1.Rows.Add(row);
-                    }                 
+                    }
                 }
                 ds.Tables.Add(t1);
             }
@@ -565,33 +595,39 @@ namespace GoodsRecieveingApp
             {
                 return false;
             }
-            string myds = Newtonsoft.Json.JsonConvert.SerializeObject(ds);           
-                RestSharp.RestClient client = new RestSharp.RestClient();
-                client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath);
+            string myds = Newtonsoft.Json.JsonConvert.SerializeObject(ds);
+            RestSharp.RestClient client = new RestSharp.RestClient();
+            client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath);
+            {
+                var Request = new RestSharp.RestRequest("SaveDocLine", RestSharp.Method.POST);
+                Request.RequestFormat = RestSharp.DataFormat.Json;
+                Request.AddJsonBody(myds);
+                var cancellationTokenSource = new CancellationTokenSource();
+                var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+                if (res.IsSuccessful && res.Content.Contains("COMPLETE"))
                 {
-                    var Request = new RestSharp.RestRequest("SaveDocLine", RestSharp.Method.POST);
-                    Request.RequestFormat = RestSharp.DataFormat.Json;
-                    Request.AddJsonBody(myds);
-                    var cancellationTokenSource = new CancellationTokenSource();
-                    var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
-                    if (res.IsSuccessful && res.Content.Contains("COMPLETE"))
+                    docs = await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode);
+                    foreach (DocLine doc in docs)
                     {
-                        return true;
+                        await ResetItem(doc);
                     }
-                    else
-                    {
-                        return false;
-                    }
-                }                  
+                    await GoodsRecieveingApp.App.Database.DeleteSpecificDocs(docCode);
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
         private async Task<bool> GRVmodule()
         {
             try
             {
-                config = await GoodsRecieveingApp.App.Database.GetConfig();
-                return config.GRVActive;
+                var confifg = await GoodsRecieveingApp.App.Database.GetConfig();
+                return confifg.GRVActive;
             }
-            catch
+            catch (Exception ex)
             {
                 return false;
             }

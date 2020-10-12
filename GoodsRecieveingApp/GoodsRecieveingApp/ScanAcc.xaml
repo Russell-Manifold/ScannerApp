@@ -22,6 +22,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="100*"/>
@@ -31,16 +32,16 @@
                 <Button x:Name="btnEntry" ImageSource="addqty.png" HeightRequest="25" BackgroundColor="Transparent" IsVisible="false"  Clicked="btnEntry_Clicked" Grid.Column="1" Grid.Row="0" HorizontalOptions="End"/>
                 <controls:ExtendedEntry ShowVirtualKeyboardOnFocus="False" MaxLength="14" HorizontalOptions="FillAndExpand" Completed="txfAccCode_Completed" x:Name="txfAccCode"   Grid.ColumnSpan="2"  Grid.Column="0" Grid.Row="1" />
                 
-                 <Label FontAttributes="Bold" x:Name="lblitemDescAcc" FontSize="14" Grid.ColumnSpan="2" Grid.Column="0" Grid.Row="2"/>
+                 <Label FontAttributes="Bold" x:Name="lblitemDescAcc" FontSize="14" Grid.ColumnSpan="2" Grid.Column="0" Grid.Row="3"/>
                 <Label FontAttributes="Bold" x:Name="lblBarCode" FontSize="14" Grid.ColumnSpan="2" Grid.Column="1" Grid.Row="2" />
-                <Label Text="Order Qty" FontSize="18" Grid.Column="0" Grid.Row="3"/>
-                <Label Text="Scan Qty" FontSize="18" Grid.Column="0" Grid.Row="4"/>
-                <Label Text="Balance" FontSize="18" Grid.Column="0" Grid.Row="5"/>
-                <Label Text="Bin" FontSize="18" Grid.Column="0" Grid.Row="6"/>
-                <Label x:Name="lblOrderQTY" FontSize="18" Grid.Column="1" Grid.Row="3"/>
-                <Label x:Name="lblScanQTY" FontSize="18" Grid.Column="1" Grid.Row="4"/>
-                <Label x:Name="lblBalance" FontSize="18" Grid.Column="1" Grid.Row="5"/>
-                <Label x:Name="lblBin" FontSize="18" Grid.Column="1" Grid.Row="6"/>
+                <Label Text="Order Qty" FontSize="18" Grid.Column="0" Grid.Row="4"/>
+                <Label Text="Scan Qty" FontSize="18" Grid.Column="0" Grid.Row="5"/>
+                <Label Text="Balance" FontSize="18" Grid.Column="0" Grid.Row="6"/>
+                <Label Text="Bin" FontSize="18" Grid.Column="0" Grid.Row="7"/>
+                <Label x:Name="lblOrderQTY" FontSize="18" Grid.Column="1" Grid.Row="4"/>
+                <Label x:Name="lblScanQTY" FontSize="18" Grid.Column="1" Grid.Row="5"/>
+                <Label x:Name="lblBalance" FontSize="18" Grid.Column="1" Grid.Row="6"/>
+                <Label x:Name="lblBin" FontSize="18" Grid.Column="1" Grid.Row="7"/>
             </Grid>
             <Button x:Name="PicImage" HeightRequest="60" WidthRequest="60" Clicked="PicImage_Clicked" IsVisible="False" BackgroundColor="Transparent" Text="Save Item Line"/>
         </StackLayout>
