@@ -30,7 +30,7 @@
                 <StackLayout>
                     <ListView x:Name="lstItems" ItemSelected="LstItems_ItemSelected" HasUnevenRows="True">
                         <ListView.Footer>
-                            <Button x:Name="btnComplete" Text="Complete" BackgroundColor="Transparent" TextColor="Green" FontAttributes="Bold" BorderWidth="1" BorderColor="LightGray" Clicked="BtnComplete_Clicked" ImageSource="TickSmall.png"/>
+                            <Button x:Name="btnComplete" Text="FINISH" BackgroundColor="Transparent" TextColor="Green" FontAttributes="Bold" BorderWidth="1" BorderColor="LightGray" Clicked="BtnComplete_Clicked" ImageSource="TickSmall.png" FontSize="Large"/>
                         </ListView.Footer>
                         <ListView.ItemTemplate>
                             <DataTemplate>

@@ -185,12 +185,20 @@ namespace PickAndPack
         }
         string CreateDocLines(List<DocLine> d,DataTable det)
         {       
-            string s = "";
+            string s = "", txtype = "00";
             foreach (string CurrItem in d.Where(x=>x.PalletNum==0).Select(x=>x.ItemCode).Distinct())
             {
                 DataRow CurrentRow = det.Select($"ItemCode='{CurrItem}'").FirstOrDefault();
+                if (CurrentRow["TaxType"].ToString().Length == 1)
+                {
+                    txtype = "0" + CurrentRow["TaxType"].ToString();
+                }
+                else
+                {
+                    txtype = CurrentRow["TaxType"].ToString();
+                }
                 if (CurrentRow != null)
-                    s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{CurrentRow["ItemCode"].ToString()}|{CurrentRow["ItemDesc"].ToString()}|4||{GoodsRecieveingApp.MainPage.ACCWH}%23";
+                    s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{txtype}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4||{GoodsRecieveingApp.MainPage.ACCWH}%23";
                         //                                 285 | 1                                | 350.88                         | 400.00                           | EACH                          | 01                               |                                   |                                   | ACC /                             |                       Description |4|001             
             }
             return s;

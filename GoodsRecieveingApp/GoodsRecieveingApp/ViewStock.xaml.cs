@@ -121,7 +121,7 @@ namespace GoodsRecieveingApp
                 }
                 else
                 {
-                    await DisplayAlert("Complete!", "The order has been saved", "OK");
+                    //await DisplayAlert("Complete!", "The order has been saved", "OK");
                     if (Navigation.NavigationStack.Count == 4)
                     {
                         Navigation.RemovePage(Navigation.NavigationStack[2]);
@@ -164,7 +164,7 @@ namespace GoodsRecieveingApp
                 await MarAsRecieved();
                 if (await SaveData())
                 {
-                    await DisplayAlert("Complete!", "All the parts have been saved", "OK");
+                    //await DisplayAlert("Complete!", "All the parts have been saved", "OK");
                     if (Navigation.NavigationStack.Count == 4)
                     {
                         Navigation.RemovePage(Navigation.NavigationStack[2]);
@@ -387,7 +387,8 @@ namespace GoodsRecieveingApp
             if (det==null)
                 return "";        
             DataRow CurrentRow = det.Rows[0];
-            return $"||Y|{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1"; ;
+             return $"| | |{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1 ";
+        //40IN0010 | | | HAR001                                              | 06 / 08 / 2020                                     | 20IN00000401                                    |Y| 0.000000 | LA.2020 / 00185                 |                                                      |                                                       |                                                    |                                                    |                                                   |                                                    |||                                                             || 30 / 09 / 2020                                                                                  |||| 0.00 | LA.2020 / 00185 ||||| N", False
         }
         async Task<string> GetGlCode(string itemCode,string WHCode)
         {

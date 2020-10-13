@@ -99,7 +99,7 @@
                 <Button FontSize="Large" x:Name="btnNext" Clicked="btnNextPallet_Clicked" BackgroundColor="Transparent" ImageSource="PalletAdd.png" HorizontalOptions="EndAndExpand"/>
             </StackLayout>
             <StackLayout IsVisible="False" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" Orientation="Horizontal" x:Name="CompletedStack">
-                <Button TextColor="Green" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" Text="Complete" BackgroundColor="Transparent" BorderColor="Black" BorderWidth="1" FontAttributes="Bold" ImageSource="TickSmall.png" FontSize="Large" x:Name="btnComplete" Clicked="btnComplete_Clicked"/>
+                <Button TextColor="Green" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" Text="Picking Complete" BackgroundColor="Transparent" BorderColor="Black" BorderWidth="1" FontAttributes="Bold" ImageSource="TickSmall.png" FontSize="Large" x:Name="btnComplete" Clicked="btnComplete_Clicked"/>
             </StackLayout>
         </StackLayout>
     </StackLayout>

@@ -189,16 +189,22 @@ namespace GoodsRecieveingApp
             if (balance==0)
             {
                 PicImage.ImageSource = "Tick.png";
+                PicImage.Text = "Complete, Save Line";
+                PicImage.TextColor = Color.Green;
                 wrong = false;
             }
             else if (balance != OrderQty&&balance>0)
             {
                 PicImage.ImageSource = "PLus.png";
+                PicImage.Text = "In-Complete, Save Line";
+                PicImage.TextColor = Color.Green;
                 wrong = false;
             }
             else if (scanQty > OrderQty|| balance < 0)
             {
                 PicImage.ImageSource = "Wrong.png";
+                PicImage.Text = "Incorrect Quantity";
+                PicImage.TextColor = Color.Red;
                 wrong = true;
             }
             else

@@ -91,7 +91,7 @@
                         </DataTemplate>
                     </ListView.ItemTemplate>
                 </ListView>
-                <Button TextColor="Green" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" Text="Complete" BackgroundColor="Transparent" BorderColor="Black" BorderWidth="1" FontAttributes="Bold" ImageSource="TickSmall.png" FontSize="Large" x:Name="btnComplete" Clicked="btnComplete_Clicked"/>
+                <Button TextColor="Green" VerticalOptions="EndAndExpand" HorizontalOptions="FillAndExpand" Text="Picking Complete" BackgroundColor="Transparent" BorderColor="Black" BorderWidth="1" FontAttributes="Bold" ImageSource="TickSmall.png" FontSize="Large" x:Name="btnComplete" Clicked="btnComplete_Clicked"/>
             </StackLayout>
         </StackLayout>
     </StackLayout>
