@@ -112,9 +112,29 @@ namespace GoodsRecieveingApp
                 ACCWH = dev.DefaultAccWH;
                 REJWH = dev.DefaultRejWH;
             }
+            if (lblPONum.Text!="")
+            {
+                if(await Check(lblPONum.Text))
+                {
+                    btnAccept.IsEnabled = false;
+                    btnRej.IsEnabled = false;
+                }
+            }
             base.OnAppearing();
             txfPOCode.Focus();          
-        }              
+        }
+        private async Task<bool> Check(string docNum)
+        {
+            List<DocLine> lines = await App.Database.GetSpecificDocsAsync(docNum);
+            foreach (string st in lines.Select(x => x.ItemCode).Distinct())
+            {
+                if (lines.Where(x => x.ItemCode == st&&x.ItemQty!=0).FirstOrDefault().ItemQty != (lines.Where(x => x.ItemCode == st).Sum(x => x.ScanAccQty) + lines.Where(x => x.ItemCode == st).Sum(x => x.ScanRejQty)))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         private async void TxfPOCode_TextChanged(object sender, TextChangedEventArgs e)
         {
            
@@ -240,7 +260,7 @@ namespace GoodsRecieveingApp
                                     Vibration.Vibrate();
                                     message.DisplayMessage("Error in storing items" + ex.Message, true);
                                 }
-                            }
+                            }                            
                             return true;
                         }
                         else
@@ -347,7 +367,11 @@ namespace GoodsRecieveingApp
                     btnAccept.IsVisible = true;
                     btnRej.IsVisible = true;
                     btnAll.IsVisible = true;
-
+                    if (await Check(lblPONum.Text))
+                    {
+                        btnAccept.IsEnabled = false;
+                        btnRej.IsEnabled = false;
+                    }
                     //ToolbarItem item = new ToolbarItem()
                     //{
                     //    Text = "Save"                    

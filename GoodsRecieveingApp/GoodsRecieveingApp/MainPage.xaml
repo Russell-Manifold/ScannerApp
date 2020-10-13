@@ -14,7 +14,7 @@
       <StackLayout x:Name="MainStack" Orientation="Vertical" VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand"  Padding="0, 20,0,0">
             <Image Source="ReceiveStck.png" VerticalOptions="Start" HorizontalOptions="CenterAndExpand"/>
             <StackLayout Orientation="Horizontal" HorizontalOptions="CenterAndExpand">
-                           <Label x:Name="lblPOCode" Text="PO Number:"  FontSize="Large" HorizontalTextAlignment="Center"/>
+                           <Label x:Name="lblPOCode" Text="PO Number:"  FontSize="Large" HorizontalTextAlignment="Center" />
         </StackLayout>
         <StackLayout Orientation="Horizontal">
                 <controls:ExtendedEntry HorizontalTextAlignment="Center" ShowVirtualKeyboardOnFocus="False"  x:Name="txfPOCode" HorizontalOptions="FillAndExpand" MaxLength="8" Completed="txfPOCode_Completed" />
@@ -22,7 +22,7 @@
         <ActivityIndicator IsVisible="False" x:Name="LodingIndiactor" IsRunning="True" />
         <StackLayout Orientation="Vertical">
                 <Label x:Name="lblCompany" IsVisible="False" HorizontalOptions="CenterAndExpand" FontSize="Large" />
-                <Label x:Name="lblPONum" IsVisible="False" HorizontalOptions="CenterAndExpand" FontSize="Large" />
+                <Label x:Name="lblPONum" IsVisible="False" HorizontalOptions="CenterAndExpand" FontSize="Large" Text="" />
             </StackLayout>
             <Button x:Name="btnAccept" Text="Accepted Items" Clicked="ButtonAccepted_Clicked" VerticalOptions="EndAndExpand" ImageSource="ItemAccept.png" BackgroundColor="Transparent" FontSize="Large" IsVisible="False"/>
             <Button x:Name="btnRej" Text="Receive As Damaged" Clicked="ButtonRejected_Clicked" VerticalOptions="EndAndExpand" ImageSource="ItemAcceptDamaged.png" BackgroundColor="Transparent" FontSize="Large" IsVisible="False"/>

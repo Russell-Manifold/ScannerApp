@@ -82,7 +82,7 @@ namespace PickAndPack
                     ErrorDocs.Add(docCode);
                     continue;
                 }
-                string docL = CreateDocLines(docs, det);
+                string docL = await CreateDocLines(docs, det);
                 string docH = CreateDocHeader(det);
                 if (docL == "" || docH == "")
                 {
@@ -124,14 +124,14 @@ namespace PickAndPack
             return ret.Replace('&', '+').Replace('\'', ' ');
             //||Y|ACK001                                 |05/03/1999                           |                                      |N|0|Message no.1                        |Message no.2                        |Message no.3                        |Delivery no.1                      |Delivery no.2                      |Delivery no.3                      |Delivery no.4                      |||00                                     ||05/03/1999                                                         |011-7402156|Johnny|011-7402157|1
         }
-        string CreateDocLines(List<DocLine> d, DataTable det)
+       async Task<string> CreateDocLines(List<DocLine> d, DataTable det)
         {
             string s = "";
             foreach (string CurrItem in d.Where(x => x.PalletNum == 0).Select(x => x.ItemCode).Distinct())
             {
                 DataRow CurrentRow = det.Select($"ItemCode='{CurrItem}'").FirstOrDefault();
                 if (CurrentRow != null)
-                    s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4||{GoodsRecieveingApp.MainPage.ACCWH}%23";
+                    s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',','.')}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{CurrentRow["WHID"].ToString()}%23";
                 //                                 285 | 1                                | 350.88                         | 400.00                           | EACH                          | 01                               |                                   |                                   | ACC /                             |                       Description |4|001             
             }
             return s;
@@ -191,6 +191,7 @@ namespace PickAndPack
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
                 if (res.Content.ToString().Contains("DocNum"))
                 {
+                    DocHeaders.Clear();
                     DataSet myds = new DataSet();
                     myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
                     CompleteNums.Clear();

@@ -121,19 +121,24 @@ namespace GoodsRecieveingApp
                 }
                 else
                 {
-                    //await DisplayAlert("Complete!", "The order has been saved", "OK");
-                    if (Navigation.NavigationStack.Count == 4)
-                    {
-                        Navigation.RemovePage(Navigation.NavigationStack[2]);
+                    if(await SaveData()){
+                        if (Navigation.NavigationStack.Count == 4)
+                        {
+                            Navigation.RemovePage(Navigation.NavigationStack[2]);
+                        }
+                        else
+                        {
+                            Navigation.RemovePage(Navigation.NavigationStack[2]);
+                            Navigation.RemovePage(Navigation.NavigationStack[3]);
+                            await Navigation.PopAsync();
+                        }
+                        message.DisplayMessage("Complete!!!", true);
                     }
                     else
                     {
-                        Navigation.RemovePage(Navigation.NavigationStack[2]);
-                        Navigation.RemovePage(Navigation.NavigationStack[3]);
-                        await Navigation.PopAsync();
-                    }
-                }
-                message.DisplayMessage("Complete!!!", true);               
+                        message.DisplayMessage("Could not save to database", true);
+                    }                
+                }                             
             }
             else
             {
@@ -432,6 +437,7 @@ namespace GoodsRecieveingApp
                 if (res.IsSuccessful && res.Content.Contains("0"))
                 {
                     await DisplayAlert("Complete!", "Request sent to pastel." + Environment.NewLine + res.Content.Split('|')[1].ToString().Substring(0, res.Content.Split('|')[1].Length - 1) + " successfully created", "OK");
+                    await MarAsRecieved();                  
                     return true;
                 }
             }
@@ -443,6 +449,22 @@ namespace GoodsRecieveingApp
             foreach (string st in lines.Select(x => x.ItemCode).Distinct())
             {
                 if (lines.Where(x => x.ItemCode == st && !x.GRN && x.ItemQty != 0).FirstOrDefault().ItemQty != (lines.Where(x => x.ItemCode == st).Sum(x => x.ScanAccQty) + lines.Where(x => x.ItemCode == st).Sum(x => x.ScanRejQty)))
+                {
+                    return false;
+                }
+            }
+            if (await IsComplete())
+            {
+                return false;
+            }
+            return true;
+        }
+        private async Task<bool> IsComplete()
+        {
+            List<DocLine> lins = (await App.Database.GetSpecificDocsAsync(docCode)).Where(x=>!x.GRN).ToList();
+            foreach (DocLine d in lins)
+            {
+                if (d.ScanAccQty>0||d.ScanRejQty>0)
                 {
                     return false;
                 }
