@@ -12,7 +12,7 @@
                         <ListView.Footer>
                             <StackLayout Orientation="Vertical">
                                 <Label Text="" x:Name="lblItemCount" IsVisible="false"/>
-                                <Button x:Name="btnComplete" Text="Complete" BackgroundColor="Transparent" TextColor="Green" FontAttributes="Bold" BorderWidth="1" BorderColor="LightGray" Clicked="BtnComplete_Clicked" ImageSource="TickSmall.png"/>
+                                <Button x:Name="btnComplete" Text="Release For Invoicing" BackgroundColor="Transparent" TextColor="Green" FontSize="Large" FontAttributes="Bold" BorderWidth="1" BorderColor="LightGray" Clicked="BtnComplete_Clicked" ImageSource="TickSmall.png"/>
                             </StackLayout>
                         </ListView.Footer>
                         <ListView.ItemTemplate>

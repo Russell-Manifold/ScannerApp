@@ -56,10 +56,13 @@ namespace PickAndPack
                 }
                 if (CompleteCodes.Count > 0)
                 {
-                    await DisplayAlert("Complete!", "The following documents have been uploaded here are the INV numbers", "View");
-                    foreach (string s in CompleteCodes)
+                    if (CompleteCodes.Count == 1)
                     {
-                        await DisplayAlert("Complete!", s, "Next");
+                        await DisplayAlert("Complete!", CompleteCodes.Count + " Order Successfully Sent To Invoicing", "OK");
+                    }
+                    else
+                    {
+                        await DisplayAlert("Complete!", CompleteCodes.Count + " Orders Successfully Sent To Invoicing", "OK");
                     }
                 }
                 LodingIndiactor.IsVisible = true;
@@ -233,7 +236,8 @@ namespace PickAndPack
         private async Task<bool> GetItems()
         {
             if (Connectivity.NetworkAccess == NetworkAccess.Internet)
-            {               
+            {
+                ErrorDocs.Clear();
                 RestSharp.RestClient client = new RestSharp.RestClient();
                 string path = "DocumentSQLConnection";
                 client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);

@@ -30,7 +30,7 @@ namespace GoodsRecieveingApp
         //public static string APIPath = "http://172.16.26.2/api/";
         //public static string APIPathIN = "http://172.16.26.2/api/";
         //public static string APIPathOUT = "http://172.16.26.2/api/";
-       
+
         public static string APIPath = "http://192.168.0.111/FDBAPI/api/";
         public static string APIPathIN = "http://192.168.0.111/FDBAPI/api/";
         public static string APIPathOUT = "http://192.168.0.111/FDBAPI/api/";
