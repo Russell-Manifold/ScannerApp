@@ -106,10 +106,11 @@ namespace PickAndPack
                     }
                     else if (res.IsSuccessful && res.Content.Contains("99"))
                     {
-                        ErrorDocs.Add(docCode+" - "+res.Content);
+                        ErrorDocs.Add(docCode+" - "+ res.Content);
 					}else
 					{
-                        ErrorDocs.Add(docCode);
+                        // ErrorDocs.Add(docCode);
+                        ErrorDocs.Add(docCode + " - " + res.Content);
                     }
                 }
             }
@@ -123,7 +124,7 @@ namespace PickAndPack
         string CreateDocHeader(DataTable det)
         {
             DataRow CurrentRow = det.Rows[0];
-            string ret = $"||Y|{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1";
+            string ret = $"||N|{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1";
             return ret.Replace('&', '+').Replace('\'', ' ');
             //||Y|ACK001                                 |05/03/1999                           |                                      |N|0|Message no.1                        |Message no.2                        |Message no.3                        |Delivery no.1                      |Delivery no.2                      |Delivery no.3                      |Delivery no.4                      |||00                                     ||05/03/1999                                                         |011-7402156|Johnny|011-7402157|1
         }
@@ -134,7 +135,7 @@ namespace PickAndPack
             {
                 DataRow CurrentRow = det.Select($"ItemCode='{CurrItem}'").FirstOrDefault();
                 if (CurrentRow != null)
-                    s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',','.')}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{CurrentRow["WHID"].ToString()}%23";
+                    s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',','.')}|{CurrentRow["ItemQty"].ToString().Replace(',', '.')}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{CurrentRow["WHID"].ToString()}|%23";
                 //                                 285 | 1                                | 350.88                         | 400.00                           | EACH                          | 01                               |                                   |                                   | ACC /                             |                       Description |4|001             
             }
             return s;

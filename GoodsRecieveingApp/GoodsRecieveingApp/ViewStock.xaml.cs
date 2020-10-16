@@ -233,6 +233,7 @@ namespace GoodsRecieveingApp
         }
         async Task<string> CreatePartDocLines(List<DocLine> d)
         {
+            string thisline = "";
             List<string> doneItems = new List<string>();
             DataTable det = await GetDocDetails(docCode);
             if (det == null)
@@ -260,7 +261,11 @@ namespace GoodsRecieveingApp
                         }
                         //GLCode = await GetGlCode(docline.ItemCode, MainPage.ACCWH);
                         if (CurrentRow != null)
-                            s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
+                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|001|%23";
+                            //thisline = "";
+                            //thisline = CurrentRow["CostPrice"].ToString() + "|" + docline.ScanAccQty + "|" + CurrentRow["ExVat"].ToString() + "|" + CurrentRow["InclVat"].ToString() + "|" + CurrentRow["Unit"].ToString() + "|" + txtype + "|" + CurrentRow["DiscType"].ToString() + "|" + CurrentRow["DiscPerc"].ToString() + "|" + docline.ItemCode.PadRight(15, ' ') + "|" + CurrentRow["ItemDesc"].ToString().PadRight(40, ' ') + "|" + "4" + "|" + "001" + "|" + CurrentRow["CostCode"].ToString() + "|" + "%23";
+                            //s += thisline.ToString();
+                        //s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
                     }
                     if (docline.ScanRejQty > 0)
                     {
@@ -275,7 +280,11 @@ namespace GoodsRecieveingApp
                         }
                         // GLCode = await GetGlCode(docline.ItemCode, MainPage.REJWH);
                         if (CurrentRow != null)
-                            s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";
+                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|028|%23";
+                        //thisline = "";
+                        //thisline = CurrentRow["CostPrice"].ToString() + "|" + docline.ScanAccQty + "|" + CurrentRow["ExVat"].ToString() + "|" + CurrentRow["InclVat"].ToString() + "|" + CurrentRow["Unit"].ToString() + "|" + txtype + "|" + CurrentRow["DiscType"].ToString() + "|" + CurrentRow["DiscPerc"].ToString() + "|" + docline.ItemCode.PadRight(15, ' ') + "|" + CurrentRow["ItemDesc"].ToString().PadRight(40, ' ') + "|" + "4" + "|" + "001" + "|" + CurrentRow["CostCode"].ToString() + "|" + "%23";
+                        //s += thisline.ToString();
+                        //s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";
                     }
                     doneItems.Add(docline.ItemBarcode);
                 }
@@ -307,13 +316,14 @@ namespace GoodsRecieveingApp
             List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode)).Where(x => !x.GRN).ToList();
             string docL = await CreatePartDocLines(docs);
             string docH = await CreateDocHeader();
+            string doctype = "107";
             if (docL == "" || docH == "")
                 return false;
             RestClient client = new RestClient();
             string path = "AddDocument";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
             {
-                string str = $"GET?DocHead={docH}&Docline={docL}&DocType=107";
+                string str = $"GET?DocHead={docH}&Docline={docL}&DocType={doctype}";
                 var Request = new RestRequest(str, Method.POST);
                 var cancellationTokenSource = new CancellationTokenSource();
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
@@ -327,6 +337,7 @@ namespace GoodsRecieveingApp
         }
         async Task<string> CreateDocLines(List<DocLine> d)
         {
+            string thisline = "";
             List<string> doneItems = new List<string>();
             DataTable det = await GetDocDetails(docCode);
             if (det==null)
@@ -353,7 +364,10 @@ namespace GoodsRecieveingApp
                             txtype = CurrentRow["TaxType"].ToString();
                         }
                         if (CurrentRow != null)
-                            s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.ACCWH}|{CurrentRow["CostCode"].ToString()}%23";
+                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|001|%23";
+                        //thisline = "";
+                        //thisline = CurrentRow["CostPrice"].ToString() + "|" + docline.ScanAccQty + "|" + CurrentRow["ExVat"].ToString() + "|" + CurrentRow["InclVat"].ToString() + "|" + CurrentRow["Unit"].ToString() + "|" + txtype + "|" + CurrentRow["DiscType"].ToString() + "|" + CurrentRow["DiscPerc"].ToString() + "|" + docline.ItemCode.PadRight(15, ' ') + "|" + CurrentRow["ItemDesc"].ToString().PadRight(40, ' ') + "|" + "4" + "|" + "001" + "|" + CurrentRow["CostCode"].ToString() + "|" + "%23";
+                        //s += thisline.ToString();
                     }
                     if (docline.ScanRejQty > 0)
                     {                       
@@ -367,7 +381,11 @@ namespace GoodsRecieveingApp
                             txtype = CurrentRow["TaxType"].ToString();
                         }
                         if (CurrentRow != null)
-                            s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";                 
+                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|028|%23";
+                        //thisline = "";
+                        //thisline = CurrentRow["CostPrice"].ToString() + "|" + docline.ScanAccQty + "|" + CurrentRow["ExVat"].ToString() + "|" + CurrentRow["InclVat"].ToString() + "|" + CurrentRow["Unit"].ToString() + "|" + txtype + "|" + CurrentRow["DiscType"].ToString() + "|" + CurrentRow["DiscPerc"].ToString() + "|" + docline.ItemCode.PadRight(15, ' ') + "|" + CurrentRow["ItemDesc"].ToString().PadRight(40, ' ') + "|" + "4" + "|" + "001" + "|" + CurrentRow["CostCode"].ToString() + "|" + "%23";
+                        //s += thisline.ToString();
+                        //s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";                 
                     }
                     doneItems.Add(docline.ItemBarcode);
 
@@ -424,13 +442,14 @@ namespace GoodsRecieveingApp
             List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode)).Where(x => !x.GRN).ToList(); 
             string docL = await CreateDocLines(docs);
             string docH = await CreateDocHeader();
+            string doctype = "107";
             if (docL == ""||docH=="")
                 return false;         
             RestClient client = new RestClient();
             string path = "AddDocument";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
             {
-                string str = $"GET?DocHead={docH}&Docline={docL}&DocType=107";
+                string str = $"GET?DocHead={docH}&Docline={docL}&DocType={doctype}";
                 var Request = new RestRequest(str, Method.POST);
                 var cancellationTokenSource = new CancellationTokenSource();
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);

@@ -8,12 +8,19 @@
     <ScrollView>
     <StackLayout VerticalOptions="FillAndExpand">
         <Label Text="Select Warehouses for this Device:" FontSize="Large" HorizontalTextAlignment="Center"/>
-        <Label Text="Default Accept Warehouse:" FontSize="Medium"/>
+        <Label Text="Default Accept/Sales Warehouse:" FontSize="Medium"/>
         <Picker Title="-Accepted WH-" x:Name="txfAccWH"  VerticalOptions="Start" HorizontalOptions="FillAndExpand" SelectedIndexChanged="txfAccWH_SelectedIndexChanged"/>
         <Label Text="Default Damaged Goods Warehouse:" FontSize="Medium"/>
         <Picker Title="-Damaged Goods WH-" x:Name="txfRejWH"  VerticalOptions="Start" HorizontalOptions="FillAndExpand" SelectedIndexChanged="txfRejWH_SelectedIndexChanged"/>
-            <Grid>
+        <Label Text="User Code for RECEIVING Module" FontSize="Medium"/>
+            <Entry x:Name="txtReceiveUser" Placeholder="Enter User Code" HorizontalOptions="Start" WidthRequest="90" Text="0"/>
+            <Label Text="User Code for INVOICING Module" FontSize="Medium"/>
+            <Entry x:Name="txtInvoiceUser" Placeholder="Enter User Code" HorizontalOptions="Start"  WidthRequest="90" Text="0"/>
+            <Label Text="User Code for WHSE TRANSFER Module" FontSize="Medium"/>
+            <Entry x:Name="txtWHTrfUser" Placeholder="Enter User Code" HorizontalOptions="Start"  WidthRequest="90" Text="0"/>
+        <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -32,9 +39,12 @@
                 <Label Text="Pastel Inventory Counts Active" Grid.Row="3"  Grid.Column="0"/>
                 <Switch x:Name="swInvCnt"  IsToggled="false" Grid.Row="3"  Grid.Column="1" IsEnabled="False"/>
                 <Label Text="Pastel Invoice Module Active" Grid.Row="4"  Grid.Column="0"/>
-                <Switch x:Name="swInvoice" IsToggled="false" Grid.Row="4"  Grid.Column="1" />
+                <Switch x:Name="swInvoice" IsToggled="false" Grid.Row="4"  Grid.Column="1" Toggled="swInvoice_Toggled"/>
+                <!-- the following can only be active if the Invoice module is active, else disable the switch-->
+                <Label Text="Delete Sales Order Lines After Successful Invoice" Grid.Row="5"  Grid.Column="0"/>
+                <Switch x:Name="swDelLines" IsToggled="false" Grid.Row="5"  Grid.Column="1" IsEnabled="False" />
             </Grid>
-            <Button Text="Save" x:Name="btnSave" Clicked="btnSave_Clicked" VerticalOptions="EndAndExpand" FontSize="Large"/>
+            <Button Text="Save" x:Name="btnSave" Clicked="btnSave_Clicked" VerticalOptions="EndAndExpand" FontSize="Large" HeightRequest="75"/>
     </StackLayout>
     </ScrollView>
 </ContentPage>

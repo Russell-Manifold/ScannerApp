@@ -8,7 +8,7 @@
     <ContentPage.Content>
         <StackLayout Orientation="Vertical">
             <ActivityIndicator IsVisible="False" x:Name="LodingIndiactor" IsRunning="True" />
-            <Button Text="UPDATE  DATA" Clicked="btnReset_Clicked"  x:Name="btnReset" HeightRequest="100" FontSize="Medium"/>
+            <Button Text="REFRESH  DATA" Clicked="btnReset_Clicked"  x:Name="btnReset" HeightRequest="100" FontSize="Medium"/>
             <Button Text="Update Data" Clicked="Button_Clicked" x:Name="btnUpdate" IsVisible="False"/>
             <!--<Button Text="Add User" Clicked="Add_User_Clicked" x:Name="btnAddUser"/>-->
             <Button Text="Device Defaults Setup" Clicked="btnConnectionSetup_Clicked" x:Name="btnConnectionSetup" HeightRequest="100" FontSize="Medium"/>

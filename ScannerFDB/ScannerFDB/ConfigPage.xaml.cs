@@ -51,6 +51,10 @@ namespace ScannerFDB
                 swWTRF.IsToggled = config.WhseTrfActive;
                 swInvCnt.IsToggled = config.CountActive;
                 swInvoice.IsToggled = config.InvoiceActive;
+                swDelLines.IsToggled = config.DeleteSOLines;
+                txtReceiveUser.Text = config.ReceiveUser.ToString();
+                txtInvoiceUser.Text = config.InvoiceUser.ToString();
+                txtWHTrfUser.Text = config.WhTrfUser.ToString();
             }           
         }
         private async void btnSave_Clicked(object sender, EventArgs e)
@@ -62,6 +66,34 @@ namespace ScannerFDB
             config.WhseTrfActive = swWTRF.IsToggled;
             config.CountActive = swInvCnt.IsToggled;
             config.InvoiceActive = swInvoice.IsToggled;
+            config.DeleteSOLines = swDelLines.IsToggled;
+            if (txtReceiveUser.Text.ToString().Length < 1)
+            {
+                config.ReceiveUser = "0";
+            }
+            else {
+                config.ReceiveUser = txtReceiveUser.Text.ToString();
+            }
+
+            if (txtInvoiceUser.Text.ToString().Length < 1)
+            {
+                config.InvoiceUser = "0";
+            }
+            else
+            {
+                config.InvoiceUser = txtInvoiceUser.Text.ToString();
+            }
+
+            if (txtWHTrfUser.Text.ToString().Length < 1)
+            {
+                config.WhTrfUser = "0";
+            }
+            else
+            {
+                config.WhTrfUser = txtWHTrfUser.Text.ToString();
+            }
+
+
             if (isNew)
             {
                 await GoodsRecieveingApp.App.Database.Insert(config);
@@ -124,6 +156,18 @@ namespace ScannerFDB
                     Vibration.Vibrate();
                     txfRejWH.SelectedIndex = -1;
                 }
+            }
+        }
+
+        private void swInvoice_Toggled(object sender, ToggledEventArgs e)
+        {
+            if (swInvoice.IsToggled)
+            {
+                swDelLines.IsEnabled = true;
+            }
+            else {
+                swDelLines.IsToggled = false;
+                swDelLines.IsEnabled = false;
             }
         }
     }

@@ -20,7 +20,10 @@ namespace Data.Model
         public bool WhseTrfActive { get; set; }
         public bool CountActive { get; set; }
         public bool InvoiceActive { get; set; }
-
+        public string ReceiveUser { get; set; }
+        public string InvoiceUser { get; set; }
+        public string WhTrfUser { get; set; }
+        public bool DeleteSOLines { get; set; }
 
     }
 }
