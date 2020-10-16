@@ -18,7 +18,7 @@
             <Entry x:Name="txtInvoiceUser" Placeholder="Enter User Code" HorizontalOptions="Start"  WidthRequest="90" Text="0"/>
             <Label Text="User Code for WHSE TRANSFER Module" FontSize="Medium"/>
             <Entry x:Name="txtWHTrfUser" Placeholder="Enter User Code" HorizontalOptions="Start"  WidthRequest="90" Text="0"/>
-        <Grid>
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>

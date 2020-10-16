@@ -116,10 +116,6 @@ namespace PickAndPack
             if (await Check())
             {
                 await SQLSetComplete();
-                //if (await InvModule()) { 
-                //    if (!await SendToPastel())//Add Check or mast just say that must do on other screeen ?
-                //    await DisplayAlert("Error!", "Could not send data to pastel", "OK");
-                //}
             }
             else
             {
@@ -155,8 +151,8 @@ namespace PickAndPack
             {
                 return false;
             }
-            string docL = CreateDocLines(docs, det);//33.5|6|60|69|PCE|15|3|0|1215|8 Lt clear locked storage box|4|001%2342.5|6|77.6|89.24|PCE|15|3|0|1216|13 Lt clear locked storage box|4|001%2358|12|108.1|124.32|PCE|15|3|0|1217|20 Lt clear locked storage box|4|001%23101|8|170|195.5|PCE|15|3|0|6716000084401|Filo Laundry Hamper Romantic Ivory|4|001%23
-            string docH = CreateDocHeader(det);//||Y|TAO01|29/06/2020|IO170852|N|0||||Take a Lot  JHB Distrubution|Cnr Riverfields Boulevard &|First Road, Witfontein Ext 54|Kempton Park,Johannesburg 1619|||||27/09/2019||||1
+            string docL = CreateDocLines(docs, det);
+            string docH = CreateDocHeader(det);
             if (docL == "" || docH == "")
                 return false;
             RestClient client = new RestClient();
@@ -167,9 +163,29 @@ namespace PickAndPack
                 var Request = new RestRequest(str, Method.POST);
                 var cancellationTokenSource = new CancellationTokenSource();
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
-                //System.IndexOutOfRangeException: Subscript out of range
-                //at PasSDK._PastelPartnerSDK.DefineDocumentHeader(String Data, Boolean& AdditionalCostInvoice)
-                //at FDBWebAPI.Controllers.AddDocumentController.AddDocument(String DocHead, String Docline, String DocType) in E:\\GithubRepos\\FDB\\FirstDutchWebServiceAPI\\FDBWebAPI\\Controllers\\AddDocumentController.cs:line 38"
+
+                /////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                //Change 1
+
+                /////when document import is complete 
+                /////if config.DeleteSOLines
+                /////Call "Edit document controller, loop through all lines of the Sales order and delete lines. (this is available in the Edit Document controller and SDK edit Document.
+                /////THIS CAN ONLY HAPPEN WHEN RECIVING OF THE ENTIRE DOCUMENT IS COMPLETE - DO NOT DELETE THE LINES ON PART RECEIVING.
+
+               
+                
+                //Change 2
+                // need to send user id with each document (Currently in the API we are sending user 0 for all transactions)
+                // we will ammend the API to suit, so the relevant user code is sent with the document and the user code is then sent to the SDK.
+
+                //Receiving we send:                            config.ReceiveUser
+                //Pick Pack /Invoicing we send:            config.InvoiceUser
+                //Warehouse Transfer we send:            configWhTrfUser
+
+
+                /////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
                 if (res.IsSuccessful && res.Content.Contains("0"))
                 {
                     await DisplayAlert("Complete!", "Invoice "+res.Content.Split('|')[1] + " successfully generated in Pastel", "OK");
@@ -206,9 +222,8 @@ namespace PickAndPack
         string CreateDocHeader(DataTable det)
         {         
             DataRow CurrentRow = det.Rows[0];
-            string ret = $"||Y|{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1";
+            string ret = $"||N|{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1";
             return ret.Replace('&', '+').Replace('\'', ' ');
-                   //||Y|ACK001                                 |05/03/1999                           |                                      |N|0|Message no.1                        |Message no.2                        |Message no.3                        |Delivery no.1                      |Delivery no.2                      |Delivery no.3                      |Delivery no.4                      |||00                                     ||05/03/1999                                                         |011-7402156|Johnny|011-7402157|1
         }
         async Task<DataTable> GetDocDetails(string DocNum)
         {//https://manifoldsa.co.za/FDBAPI/api/GetFullDocDetails/GET?qrystr=ACCHISTL|6|IO170852|102
