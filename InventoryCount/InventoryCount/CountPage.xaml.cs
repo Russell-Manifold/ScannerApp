@@ -34,20 +34,20 @@ namespace InventoryCount
         }
         protected async override void OnAppearing()
         {
-            base.OnAppearing();           
-            if (countID==0)
+            base.OnAppearing();
+            if (countID == 0)
             {
                 Vibration.Vibrate();
-                message.DisplayMessage("Please select a valid Count",true);
+                message.DisplayMessage("Please select a valid Count", true);
                 await Navigation.PopAsync();
             }
-            if(!await GetItems())
+            if (!await GetItems())
             {
                 Vibration.Vibrate();
                 message.DisplayMessage("Error in fetching data", true);
                 await Navigation.PopAsync();
             }
-            if(!RefreshList())
+            if (!RefreshList())
             {
                 Vibration.Vibrate();
                 message.DisplayMessage("Could not display items", true);
@@ -62,7 +62,7 @@ namespace InventoryCount
         }
         async Task<bool> GetItems()
         {
-            if (Connectivity.NetworkAccess==NetworkAccess.Internet)
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
                 RestClient client = new RestClient();
                 string path = "Inventory";
@@ -109,7 +109,7 @@ namespace InventoryCount
                             }
                             catch
                             {
-                                i1.CountUser =0;
+                                i1.CountUser = 0;
                             }
                             try
                             {
@@ -128,7 +128,7 @@ namespace InventoryCount
             else
             {
                 Vibration.Vibrate();
-                message.DisplayMessage("Please connect to the internet",true);
+                message.DisplayMessage("Please connect to the internet", true);
                 return false;
             }
             return false;
@@ -145,17 +145,18 @@ namespace InventoryCount
                 else if (!ite.isFirst)
                 {
                     ite.Status = "0";
-                }else
+                }
+                else
                 {
                     ite.Status = "1";
                 }
             }
-            lstItems.ItemsSource = items.OrderBy(x=>x.Status).ThenBy(x=>x.Bin);
+            lstItems.ItemsSource = items.OrderBy(x => x.Status).ThenBy(x => x.Bin);
             _ = CheckIfComplete();
             return true;
         }
         Task CheckIfComplete()
-        {          
+        {
             foreach (InventoryItem i in items)
             {
                 if (i.Complete == false)
@@ -168,14 +169,14 @@ namespace InventoryCount
             return null;
         }
         void Setlbl(string desc)
-        {           
+        {
             lblLayout.IsVisible = true;
             currentItem = items.Where(x => x.ItemDesc == desc).First();
-            lblCurrentItem.Text = currentItem .ItemDesc+ " : \nBin: "+currentItem.Bin;
+            lblCurrentItem.Text = currentItem.ItemDesc + " : \nBin: " + currentItem.Bin;
             if (items.Where(x => x.ItemDesc == desc).First().isFirst)
             {
                 lblLayout.BackgroundColor = Color.FromHex("#3F51B5");
-                lblCurrentQty.Text = ""+ CurrentQTYCounted;
+                lblCurrentQty.Text = "" + CurrentQTYCounted;
             }
             else
             {
@@ -185,7 +186,7 @@ namespace InventoryCount
         }
         void SameItemCheck(string itemCode)
         {
-            if(currentItem.ItemCode != null)
+            if (currentItem.ItemCode != null)
             {
                 if (itemCode != currentItem.ItemCode)
                 {
@@ -196,17 +197,17 @@ namespace InventoryCount
         private async void txfItemCode_Completed(object sender, EventArgs e)
         {
             LoadingIndicator.IsVisible = true;
-            if (txfItemCode.Text.Length>10)
+            if (txfItemCode.Text.Length > 10)
             {
-                if (items.Where(x => x.BarCode == txfItemCode.Text&&x.Complete==false).FirstOrDefault() != null)
+                if (items.Where(x => x.BarCode == txfItemCode.Text && x.Complete == false).FirstOrDefault() != null)
                 {
                     int CUSTQTY = 1;
                     if (InvLandingPage.CustQty)
                     {
-                        string result = await DisplayPromptAsync("Custom QTY", "Enter QTY of SINGLE units","OK","Cancel",keyboard:Keyboard.Numeric);
+                        string result = await DisplayPromptAsync("Custom QTY", "Enter QTY of SINGLE units", "OK", "Cancel", keyboard: Keyboard.Numeric);
                         switch (result)
-                        {                              
-                        case "Cancel":
+                        {
+                            case "Cancel":
                                 Vibration.Vibrate();
                                 message.DisplayMessage("You have to enter a QTY", true);
                                 txfItemCode.Text = "";
@@ -233,15 +234,15 @@ namespace InventoryCount
                     SameItemCheck(items.Where(x => x.BarCode == txfItemCode.Text).First().ItemCode);
                     CurrentQTYCounted += CUSTQTY;
                     Setlbl(items.Where(x => x.BarCode == txfItemCode.Text).First().ItemDesc);
-                        if (!RefreshList())
-                        {
-                            Vibration.Vibrate();
-                            message.DisplayMessage("Could Not Refresh The List", true);
-                            txfItemCode.Text = "";
-                            LoadingIndicator.IsVisible = false;
-                            txfItemCode.Focus();
-                            return;
-                        }            
+                    if (!RefreshList())
+                    {
+                        Vibration.Vibrate();
+                        message.DisplayMessage("Could Not Refresh The List", true);
+                        txfItemCode.Text = "";
+                        LoadingIndicator.IsVisible = false;
+                        txfItemCode.Focus();
+                        return;
+                    }
                 }
                 else
                 {
@@ -253,7 +254,7 @@ namespace InventoryCount
                     return;
                 }
             }
-            else if(txfItemCode.Text.Length>7&&!InvLandingPage.CustQty)
+            else if (txfItemCode.Text.Length > 7 && !InvLandingPage.CustQty)
             {
                 BOMItem bi = new BOMItem();
                 try
@@ -269,20 +270,20 @@ namespace InventoryCount
                     txfItemCode.Focus();
                     return;
                 }
-                if (items.Where(x=>x.ItemCode==bi.ItemCode && x.Complete == false).FirstOrDefault() != null)
+                if (items.Where(x => x.ItemCode == bi.ItemCode && x.Complete == false).FirstOrDefault() != null)
                 {
                     SameItemCheck(bi.ItemCode);
                     CurrentQTYCounted += bi.Qty;
                     Setlbl(items.Where(x => x.ItemCode == bi.ItemCode).First().ItemDesc);
-                        if (!RefreshList())
-                        {
-                            Vibration.Vibrate();
-                            message.DisplayMessage("Could Not Refresh The List", true);
-                            txfItemCode.Text = "";
-                            LoadingIndicator.IsVisible = false;
-                            txfItemCode.Focus();
-                            return;
-                        }                         
+                    if (!RefreshList())
+                    {
+                        Vibration.Vibrate();
+                        message.DisplayMessage("Could Not Refresh The List", true);
+                        txfItemCode.Text = "";
+                        LoadingIndicator.IsVisible = false;
+                        txfItemCode.Focus();
+                        return;
+                    }
                 }
                 else
                 {
@@ -294,7 +295,7 @@ namespace InventoryCount
                     return;
                 }
             }
-            else if(InvLandingPage.CustQty&&(txfItemCode.Text.Length==8|| txfItemCode.Text.Length == 9))
+            else if (InvLandingPage.CustQty && (txfItemCode.Text.Length == 8 || txfItemCode.Text.Length == 9))
             {
                 Vibration.Vibrate();
                 message.DisplayMessage("You cannot add a pack to a custom Qty scan", true);
@@ -302,7 +303,7 @@ namespace InventoryCount
             txfItemCode.Text = "";
             LoadingIndicator.IsVisible = false;
             txfItemCode.Focus();
-        }       
+        }
         private async void lstItems_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
             InventoryItem dl = e.SelectedItem as InventoryItem;
@@ -312,8 +313,8 @@ namespace InventoryCount
                 case "NO":
                     break;
                 case "YES":
-                   
-                    if(!await ResetInDB(dl.ItemDesc, dl.isFirst))
+
+                    if (!await ResetInDB(dl.ItemDesc, dl.isFirst))
                     {
                         Vibration.Vibrate();
                         message.DisplayMessage("Could not reset in Database", true);
@@ -326,7 +327,7 @@ namespace InventoryCount
                     {
                         if (dl.isFirst)
                         {
-                            items.Where(x => x.ItemDesc == dl.ItemDesc).FirstOrDefault().FirstScanQty = 0;                           
+                            items.Where(x => x.ItemDesc == dl.ItemDesc).FirstOrDefault().FirstScanQty = 0;
                         }
                         else
                         {
@@ -382,7 +383,7 @@ namespace InventoryCount
         }
         private async void btnComplete_Clicked(object sender, EventArgs e)
         {
-            message.DisplayMessage("Complete!",true);
+            message.DisplayMessage("Complete!", true);
             await Navigation.PopAsync();
         }
         private async void Entry_Focused(object sender, FocusEventArgs e)
@@ -425,7 +426,7 @@ namespace InventoryCount
         private async Task<bool> CheckWithSQL()
         {
             int QTY = 0;
-            string itemcode = currentItem.ItemCode;           
+            string itemcode = currentItem.ItemCode;
             if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
                 RestClient client = new RestClient();
@@ -437,7 +438,7 @@ namespace InventoryCount
                     var Request = new RestRequest(str, Method.GET);
                     var cancellationTokenSource = new CancellationTokenSource();
                     var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
-                    if (!res.IsSuccessful||res.Content==null)
+                    if (!res.IsSuccessful || res.Content == null)
                     {
                         Vibration.Vibrate();
                         message.DisplayMessage("Item not found", true);
@@ -445,7 +446,7 @@ namespace InventoryCount
                     }
                     else
                     {
-                        QTY = Convert.ToInt32(Double.Parse(res.Content, CultureInfo.InvariantCulture.NumberFormat), CultureInfo.InvariantCulture.NumberFormat);                       
+                        QTY = Convert.ToInt32(Double.Parse(res.Content, CultureInfo.InvariantCulture.NumberFormat), CultureInfo.InvariantCulture.NumberFormat);
                     }
                 }
             }
@@ -458,11 +459,11 @@ namespace InventoryCount
             SetQty();
             if (currentItem.isFirst)
             {
-                if (currentItem.FirstScanQty==QTY)
+                if (currentItem.FirstScanQty == QTY)
                 {
                     items.Where(x => x.BarCode == currentItem.BarCode).First().Complete = true;
-                    items.Where(x => x.BarCode == currentItem.BarCode).First().FinalQTY = items.Where(x=>x.BarCode==currentItem.BarCode).First().FirstScanQty;
-                    await DisplayAlert("Complete!","QTY DID MATCH!","OK");
+                    items.Where(x => x.BarCode == currentItem.BarCode).First().FinalQTY = items.Where(x => x.BarCode == currentItem.BarCode).First().FirstScanQty;
+                    await DisplayAlert("Complete!", "QTY DID MATCH!", "OK");
                 }
                 else
                 {
@@ -487,10 +488,20 @@ namespace InventoryCount
                     //await Navigation.PushAsync(new AcceptScanPage(currentItem,QTY));
                 }
             }
-            if (!await SendData())
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+            {
+
+
+                if (!await SendData())
+                {
+                    Vibration.Vibrate();
+                    message.DisplayMessage("Could not update the database", true);
+                }
+            }
+            else
             {
                 Vibration.Vibrate();
-                message.DisplayMessage("Could not update the database",true);
+                message.DisplayMessage("No Internet Connection", true);
             }
             Navigation.InsertPageBefore(new CountPage(countID), Navigation.NavigationStack[3]);
             await Navigation.PopAsync();
@@ -549,6 +560,6 @@ namespace InventoryCount
                 }
             }
             return false;
-        }    
+        }
     }
 }

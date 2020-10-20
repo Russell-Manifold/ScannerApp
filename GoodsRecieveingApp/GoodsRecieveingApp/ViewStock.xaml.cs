@@ -29,6 +29,13 @@ namespace GoodsRecieveingApp
         }
         public async void PopData()
         {
+			try
+			{
+                config = await GoodsRecieveingApp.App.Database.GetConfig();
+			}
+			catch
+			{
+			}
             lstItems.ItemsSource = null;
             List<DocLine> lines = await App.Database.GetSpecificDocsAsync(docCode);
             List<DocLine> list = new List<DocLine>();
@@ -106,61 +113,70 @@ namespace GoodsRecieveingApp
         {
             btnComplete.IsEnabled = false;
             message.DisplayMessage("Saving information!", true);
-            if (await Check())
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                string uName = "";
-                while (uName == "" || uName == null)
+                if (await Check())
                 {
-                    uName = await DisplayPromptAsync("Scan user barcode", "Scan Auth barcode", "OK");
-                }
-                await InsertUser(uName);
-                if (!await SendToPastel())
-                {
-                    Vibration.Vibrate();
-                    message.DisplayMessage("Error! - Could not Complete" , true);
-                }
-                else
-                {
-                    if(await SaveData()){
-                        if (Navigation.NavigationStack.Count == 4)
-                        {
-                            Navigation.RemovePage(Navigation.NavigationStack[2]);
-                        }
-                        else
-                        {
-                            Navigation.RemovePage(Navigation.NavigationStack[2]);
-                            Navigation.RemovePage(Navigation.NavigationStack[3]);
-                            await Navigation.PopAsync();
-                        }
-                        message.DisplayMessage("Complete!!!", true);
+                    string uName = "";
+                    while (uName == "" || uName == null)
+                    {
+                        uName = await DisplayPromptAsync("Scan user barcode", "Scan Auth barcode", "OK");
+                    }
+                    await InsertUser(uName);
+                    if (!await SendToPastel())
+                    {
+                        Vibration.Vibrate();
+                        message.DisplayMessage("Error! - Could not Complete", true);
                     }
                     else
                     {
-                        message.DisplayMessage("Could not save to database", true);
-                    }                
-                }                             
-            }
-            else
-            {
-                if (await CanPartRecieve())
+                        if (await SaveData())
+                        {
+                            if (Navigation.NavigationStack.Count == 4)
+                            {
+                                Navigation.RemovePage(Navigation.NavigationStack[2]);
+                            }
+                            else
+                            {
+                                Navigation.RemovePage(Navigation.NavigationStack[2]);
+                                Navigation.RemovePage(Navigation.NavigationStack[3]);
+                                await Navigation.PopAsync();
+                            }
+                            message.DisplayMessage("Complete!!!", true);
+                        }
+                        else
+                        {
+                            message.DisplayMessage("Could not save to database", true);
+                        }
+                    }
+                }
+                else
                 {
-                    string res = await DisplayActionSheet("Confirm - Part recieve the items you have scanned?", "YES", "NO");
-                    if (res == "YES")
+                    if (await CanPartRecieve())
                     {
-                        await MarkAndComplete();
+                        string res = await DisplayActionSheet("Confirm - Part recieve the items you have scanned?", "YES", "NO");
+                        if (res == "YES")
+                        {
+                            await MarkAndComplete();
+                        }
+                        else
+                        {
+                            Vibration.Vibrate();
+                            message.DisplayMessage("Please make sure all items are GREEN!", true);
+                        }
                     }
                     else
                     {
                         Vibration.Vibrate();
-                        message.DisplayMessage("Please make sure all items are GREEN!", true);
+                        message.DisplayMessage("You have no new items scanned!", true);
                     }
                 }
-				else
-				{
-                    Vibration.Vibrate();
-                    message.DisplayMessage("You have no new items scanned!", true);
-                }
-            }      
+            }
+            else
+            {
+                Vibration.Vibrate();
+                message.DisplayMessage("No Internet connection", true);
+            }
         }
         private async Task MarkAndComplete()
         {
@@ -261,7 +277,7 @@ namespace GoodsRecieveingApp
                         }
                         //GLCode = await GetGlCode(docline.ItemCode, MainPage.ACCWH);
                         if (CurrentRow != null)
-                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|001|%23";
+                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{config.DefaultAccWH}%23";
                             //thisline = "";
                             //thisline = CurrentRow["CostPrice"].ToString() + "|" + docline.ScanAccQty + "|" + CurrentRow["ExVat"].ToString() + "|" + CurrentRow["InclVat"].ToString() + "|" + CurrentRow["Unit"].ToString() + "|" + txtype + "|" + CurrentRow["DiscType"].ToString() + "|" + CurrentRow["DiscPerc"].ToString() + "|" + docline.ItemCode.PadRight(15, ' ') + "|" + CurrentRow["ItemDesc"].ToString().PadRight(40, ' ') + "|" + "4" + "|" + "001" + "|" + CurrentRow["CostCode"].ToString() + "|" + "%23";
                             //s += thisline.ToString();
@@ -280,7 +296,7 @@ namespace GoodsRecieveingApp
                         }
                         // GLCode = await GetGlCode(docline.ItemCode, MainPage.REJWH);
                         if (CurrentRow != null)
-                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|028|%23";
+                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{config.DefaultRejWH}%23";
                         //thisline = "";
                         //thisline = CurrentRow["CostPrice"].ToString() + "|" + docline.ScanAccQty + "|" + CurrentRow["ExVat"].ToString() + "|" + CurrentRow["InclVat"].ToString() + "|" + CurrentRow["Unit"].ToString() + "|" + txtype + "|" + CurrentRow["DiscType"].ToString() + "|" + CurrentRow["DiscPerc"].ToString() + "|" + docline.ItemCode.PadRight(15, ' ') + "|" + CurrentRow["ItemDesc"].ToString().PadRight(40, ' ') + "|" + "4" + "|" + "001" + "|" + CurrentRow["CostCode"].ToString() + "|" + "%23";
                         //s += thisline.ToString();
@@ -289,7 +305,7 @@ namespace GoodsRecieveingApp
                     doneItems.Add(docline.ItemBarcode);
                 }
             }
-            return s;
+            return s.Replace(',','.');
         }
         async Task<DataTable> GetDocDetails(string DocNum)
         {//http://192.168.0.100/FDBAPI/api/GetFullDocDetails/GET?qrystr=ACCHISTL|6|PO100330|106
@@ -323,7 +339,7 @@ namespace GoodsRecieveingApp
             string path = "AddDocument";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
             {
-                string str = $"GET?DocHead={docH}&Docline={docL}&DocType={doctype}";
+                string str = $"GET?DocHead={docH}&Docline={docL}&DocType={doctype}&Userid={config.ReceiveUser}";
                 var Request = new RestRequest(str, Method.POST);
                 var cancellationTokenSource = new CancellationTokenSource();
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
@@ -364,7 +380,7 @@ namespace GoodsRecieveingApp
                             txtype = CurrentRow["TaxType"].ToString();
                         }
                         if (CurrentRow != null)
-                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|001|%23";
+                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{config.DefaultAccWH}%23";
                         //thisline = "";
                         //thisline = CurrentRow["CostPrice"].ToString() + "|" + docline.ScanAccQty + "|" + CurrentRow["ExVat"].ToString() + "|" + CurrentRow["InclVat"].ToString() + "|" + CurrentRow["Unit"].ToString() + "|" + txtype + "|" + CurrentRow["DiscType"].ToString() + "|" + CurrentRow["DiscPerc"].ToString() + "|" + docline.ItemCode.PadRight(15, ' ') + "|" + CurrentRow["ItemDesc"].ToString().PadRight(40, ' ') + "|" + "4" + "|" + "001" + "|" + CurrentRow["CostCode"].ToString() + "|" + "%23";
                         //s += thisline.ToString();
@@ -381,7 +397,7 @@ namespace GoodsRecieveingApp
                             txtype = CurrentRow["TaxType"].ToString();
                         }
                         if (CurrentRow != null)
-                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|028|%23";
+                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{config.DefaultRejWH}%23";
                         //thisline = "";
                         //thisline = CurrentRow["CostPrice"].ToString() + "|" + docline.ScanAccQty + "|" + CurrentRow["ExVat"].ToString() + "|" + CurrentRow["InclVat"].ToString() + "|" + CurrentRow["Unit"].ToString() + "|" + txtype + "|" + CurrentRow["DiscType"].ToString() + "|" + CurrentRow["DiscPerc"].ToString() + "|" + docline.ItemCode.PadRight(15, ' ') + "|" + CurrentRow["ItemDesc"].ToString().PadRight(40, ' ') + "|" + "4" + "|" + "001" + "|" + CurrentRow["CostCode"].ToString() + "|" + "%23";
                         //s += thisline.ToString();
@@ -402,7 +418,7 @@ namespace GoodsRecieveingApp
             //            s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{GLCode}|{CurrentRow["ItemDesc"].ToString()}|6|{WH}|{CurrentRow["CostCode"].ToString()}%23";
             //    }                  
             //}
-            return s;
+            return s.Replace(',','.');
         }
         async Task<string> CreateDocHeader()
         {
@@ -410,7 +426,7 @@ namespace GoodsRecieveingApp
             if (det==null)
                 return "";        
             DataRow CurrentRow = det.Rows[0];
-             return $"| | |{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1 ";
+             return $"{CurrentRow["ExtRef"].ToString()}||N|{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1 ";
         //40IN0010 | | | HAR001                                              | 06 / 08 / 2020                                     | 20IN00000401                                    |Y| 0.000000 | LA.2020 / 00185                 |                                                      |                                                       |                                                    |                                                    |                                                   |                                                    |||                                                             || 30 / 09 / 2020                                                                                  |||| 0.00 | LA.2020 / 00185 ||||| N", False
         }
         async Task<string> GetGlCode(string itemCode,string WHCode)
@@ -449,7 +465,7 @@ namespace GoodsRecieveingApp
             string path = "AddDocument";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
             {
-                string str = $"GET?DocHead={docH}&Docline={docL}&DocType={doctype}";
+                string str = $"GET?DocHead={docH}&Docline={docL}&DocType={doctype}&Userid={config.ReceiveUser}";
                 var Request = new RestRequest(str, Method.POST);
                 var cancellationTokenSource = new CancellationTokenSource();
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);

@@ -35,19 +35,27 @@ namespace PickAndPack
         }
         private async void txfRecUser_Completed(object sender, EventArgs e)
         {
-            if (!await CheckUser())
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                Loading.IsVisible = false;
-                txfRecUser.Text = "";
-                txfRecUser.Focus();
-                return;
+                if (!await CheckUser())
+                {
+                    Loading.IsVisible = false;
+                    txfRecUser.Text = "";
+                    txfRecUser.Focus();
+                    return;
+                }
+                lblRecUser.IsVisible = false;
+                txfRecUser.IsVisible = false;
+                lblSOCode.IsVisible = true;
+                txfSOCOde.IsVisible = true;
+                MainImg.IsVisible = true;
+                btnComplete.IsVisible = true;
             }
-            lblRecUser.IsVisible = false;
-            txfRecUser.IsVisible = false;
-            lblSOCode.IsVisible = true;
-            txfSOCOde.IsVisible = true;
-            MainImg.IsVisible = true;
-            btnComplete.IsVisible = true;
+            else
+            {
+                Vibration.Vibrate();
+                message.DisplayMessage("No Internet Connection", true);
+            }
             txfSOCOde.Focus();
         }
         private async void txfSOCOde_Completed(object sender, EventArgs e)
@@ -64,7 +72,7 @@ namespace PickAndPack
             {
                 message.DisplayMessage("This SO has been scanned already", true);
                 Vibration.Vibrate();
-            }           
+            }
             txfSOCOde.Text = "";
             txfSOCOde.Focus();
         }
@@ -102,7 +110,7 @@ namespace PickAndPack
                         }
                         if (!lblScannedCodes.Text.Contains(txfSOCOde.Text))
                         {
-                            lblScannedCodes.Text += txfSOCOde.Text +"\n\n";
+                            lblScannedCodes.Text += txfSOCOde.Text + "\n\n";
                         }
                         return true;
                     }
@@ -112,14 +120,16 @@ namespace PickAndPack
         }
         async Task<bool> SendStatus(string status)
         {
-            string Status= "DocControlUser";
-            if (status=="2")
+            string Status = "DocControlUser";
+            if (status == "2")
             {
                 Status = "PickerUser";
-            }else if (status == "3")
+            }
+            else if (status == "3")
             {
                 Status = "PackerUser";
-            }else if (status == "4")
+            }
+            else if (status == "4")
             {
                 Status = "AuthUser";
             }
@@ -131,7 +141,7 @@ namespace PickAndPack
             string path = "DocumentSQLConnection";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
             {
-                string str = $"POST?qry=UPDATE tblTempDocHeader SET DocStatus={((Convert.ToInt32(status))+1)},{Status}={RecUserCode} WHERE DocNum ='{txfSOCOde.Text}'";
+                string str = $"POST?qry=UPDATE tblTempDocHeader SET DocStatus={((Convert.ToInt32(status)) + 1)},{Status}={RecUserCode} WHERE DocNum ='{txfSOCOde.Text}'";
                 var Request = new RestSharp.RestRequest();
                 Request.Resource = str;
                 Request.Method = RestSharp.Method.POST;
@@ -143,7 +153,7 @@ namespace PickAndPack
                 }
             }
             return false;
-        }      
+        }
         private void Entry_Focused(object sender, FocusEventArgs e)
         {
             _currententry = sender as ExtendedEntry;
@@ -158,7 +168,7 @@ namespace PickAndPack
             }
         }
         private async Task<bool> CheckUser()
-        {            
+        {
             try
             {
                 RestClient client = new RestClient();
@@ -176,7 +186,7 @@ namespace PickAndPack
                         foreach (DataRow row in myds.Tables[0].Rows)
                         {
                             RecUserCode = Convert.ToInt32(row["Id"].ToString());
-                        }                      
+                        }
                         Loading.IsVisible = false;
                         return true;
 
@@ -200,7 +210,7 @@ namespace PickAndPack
         }
         private async void btnComplete_Clicked(object sender, EventArgs e)
         {
-            await DisplayAlert("COMPLETE!","All data saved","OK");
+            await DisplayAlert("COMPLETE!", "All data saved", "OK");
             await Navigation.PopAsync();
         }
     }

@@ -23,7 +23,8 @@ namespace Data.Model
         public string ReceiveUser { get; set; }
         public string InvoiceUser { get; set; }
         public string WhTrfUser { get; set; }
-              public bool DeleteSOLines { get; set; }
+        //public bool DeleteSOLines { get; set; }
+        public string DefaultAPI { get; set; }
 
     }
 }

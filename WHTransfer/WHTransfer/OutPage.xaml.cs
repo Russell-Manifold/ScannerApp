@@ -20,26 +20,26 @@ namespace WHTransfer
     {
         private List<string> WHIDs = new List<string>();
         IMessage message = DependencyService.Get<IMessage>();
-        public static string FromWH="";
+        public static string FromWH = "";
         public OutPage()
         {
             InitializeComponent();
         }
         private async void Button_Clicked(object sender, EventArgs e)
         {
-            if (pickerFromWH.SelectedIndex==-1|| pickerToWH.SelectedIndex == -1)
+            if (pickerFromWH.SelectedIndex == -1 || pickerToWH.SelectedIndex == -1)
             {
                 Vibration.Vibrate();
-                message.DisplayMessage("Please enter all fields",true);
+                message.DisplayMessage("Please enter all fields", true);
             }
             else
             {
                 FromWH = pickerFromWH.SelectedItem.ToString();
                 await GoodsRecieveingApp.App.Database.Insert(new IBTHeader { TrfDate = DateTime.Now.ToString("dd MMM yyyy"), FromWH = pickerFromWH.SelectedItem.ToString(), ToWH = pickerToWH.SelectedItem.ToString(), FromDate = DatePickerFrom.Date.ToString("dd MMM yyyy"), RecDate = DatePickerRec.Date.ToString("dd MMM yyyy"), Active = true });
-                message.DisplayMessage("Complete! Transfer started",true);
+                message.DisplayMessage("Complete! Transfer started", true);
                 await Navigation.PushAsync(new OutItems());
             }
-        }   
+        }
         private async void BtnContinue_Clicked(object sender, EventArgs e)
         {
             await Navigation.PushAsync(new OutItems());
@@ -51,16 +51,24 @@ namespace WHTransfer
         private void DatePickerRec_Unfocused(object sender, FocusEventArgs e)
         {
             lblDatePickRec.Text = "Receving Date: " + DatePickerRec.Date.ToString("dd MMM yyyy");
-        }        
+        }
         protected async override void OnAppearing()
         {
             base.OnAppearing();
-            await FetchWH();
-            await GoodsRecieveingApp.App.Database.DeleteAllHeaders();
-            DatePickerFrom.Date = DateTime.Today;
-            DatePickerFrom.MinimumDate = DateTime.Today;
-            DatePickerRec.MinimumDate = DateTime.Today;
-            DatePickerRec.Date = DateTime.Today;
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+            {
+                await FetchWH();
+                await GoodsRecieveingApp.App.Database.DeleteAllHeaders();
+                DatePickerFrom.Date = DateTime.Today;
+                DatePickerFrom.MinimumDate = DateTime.Today;
+                DatePickerRec.MinimumDate = DateTime.Today;
+                DatePickerRec.Date = DateTime.Today;
+            }
+            else
+            {
+                Vibration.Vibrate();
+                message.DisplayMessage("No Internet Connection", true);
+            }
         }
         private async Task<bool> FetchWH()
         {
@@ -117,7 +125,7 @@ namespace WHTransfer
         {
             if (pickerFromWH.SelectedIndex != -1)
             {
-                if (pickerToWH.SelectedIndex!=-1)
+                if (pickerToWH.SelectedIndex != -1)
                 {
                     if (pickerFromWH.SelectedItem.ToString() == pickerToWH.SelectedItem.ToString())
                     {

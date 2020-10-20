@@ -11,6 +11,7 @@ using RestSharp;
 using System.Threading;
 using System.Data;
 using Data.Message;
+using Xamarin.Essentials;
 
 namespace PickAndPack
 {
@@ -113,13 +114,21 @@ namespace PickAndPack
         }
         private async void BtnComplete_Clicked(object sender, EventArgs e)
         {
-            if (await Check())
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                await SQLSetComplete();
+                if (await Check())
+                {
+                    await SQLSetComplete();
+                }
+                else
+                {
+                    await DisplayAlert("Error!", "There is an error in the order, Please make sure all items are green", "OK");
+                }
             }
             else
             {
-                await DisplayAlert("Error!", "There is an error in the order, Please make sure all items are green", "OK");
+                Vibration.Vibrate();
+                message.DisplayMessage("No Internet Connection", true);
             }
         }
         private async Task<bool> Check()
@@ -159,7 +168,7 @@ namespace PickAndPack
             string path = "AddDocument";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
             {
-                string str = $"GET?DocHead={docH}&Docline={docL}&DocType=103";
+                string str = $"GET?DocHead={docH}&Docline={docL}&DocType=103&Userid={config.InvoiceUser}";
                 var Request = new RestRequest(str, Method.POST);
                 var cancellationTokenSource = new CancellationTokenSource();
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
@@ -217,12 +226,12 @@ namespace PickAndPack
                     s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{txtype}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4||{GoodsRecieveingApp.MainPage.ACCWH}%23";
                         //                                 285 | 1                                | 350.88                         | 400.00                           | EACH                          | 01                               |                                   |                                   | ACC /                             |                       Description |4|001             
             }
-            return s;
+            return s.Replace(',','.');
         }
         string CreateDocHeader(DataTable det)
         {         
             DataRow CurrentRow = det.Rows[0];
-            string ret = $"||N|{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1";
+            string ret = $"{CurrentRow["ExtRef"].ToString()}||N|{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1";
             return ret.Replace('&', '+').Replace('\'', ' ');
         }
         async Task<DataTable> GetDocDetails(string DocNum)

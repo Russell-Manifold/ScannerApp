@@ -116,7 +116,14 @@ namespace GoodsRecieveingApp
                     case "NO":
                         break;
                     case "YES":
-                        await ResetItem();
+                        if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+                        {
+                            await ResetItem();
+                        }
+                        else
+                        {
+                            message.DisplayMessage("No Internet Connection", true);
+                        }
                         break;
                 }
             }
@@ -293,18 +300,26 @@ namespace GoodsRecieveingApp
             }
         }
 		protected async override void OnDisappearing()
-		{
-			base.OnDisappearing();
+        {
+            base.OnDisappearing();
             if (EditsMade)
             {
-                if (await SaveData())
+                if (Connectivity.NetworkAccess == NetworkAccess.Internet)
                 {
-                    message.DisplayMessage("All data Saved", true);
+                    if (await SaveData())
+                    {
+                        message.DisplayMessage("All data Saved", true);
+                    }
+                    else
+                    {
+                        Vibration.Vibrate();
+                        message.DisplayMessage("Error!!! Could Not Save!", true);
+                    }
                 }
                 else
                 {
                     Vibration.Vibrate();
-                    message.DisplayMessage("Error!!! Could Not Save!", true);
+                    message.DisplayMessage("No Internet Connection", true);
                 }
             }
         }

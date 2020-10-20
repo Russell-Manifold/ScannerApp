@@ -31,9 +31,10 @@ namespace GoodsRecieveingApp
         //public static string APIPathIN = "http://172.16.26.2/api/";
         //public static string APIPathOUT = "http://172.16.26.2/api/";
 
-        public static string APIPath = "http://192.168.0.111/FDBAPI/api/";
-        public static string APIPathIN = "http://192.168.0.111/FDBAPI/api/";
-        public static string APIPathOUT = "http://192.168.0.111/FDBAPI/api/";
+        //public static string APIPath = "http://192.168.0.111/FDBAPI/api/";
+        public static string APIPath = "";
+        //public static string APIPathIN = "http://192.168.0.111/FDBAPI/api/";
+        //public static string APIPathOUT = "http://192.168.0.111/FDBAPI/api/";
         public static string UserName = "";
         public static string ACCWH = "";
         public static string REJWH = "";
@@ -169,7 +170,7 @@ namespace GoodsRecieveingApp
             else
             {
                 Vibration.Vibrate();
-                message.DisplayMessage("Could not find document status", false);
+                message.DisplayMessage("No Internet Connection", false);
             }
         }
         private async void ButtonAccepted_Clicked(object sender, EventArgs e)

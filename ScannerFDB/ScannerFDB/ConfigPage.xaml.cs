@@ -28,7 +28,15 @@ namespace ScannerFDB
         protected async override void OnAppearing()
         {
             base.OnAppearing();
-            await FetchWH();
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+            {
+                await FetchWH();
+            }
+            else
+            {
+                Vibration.Vibrate();
+                message.DisplayMessage("No Internet Connection", true);
+            }
             try
             {
                 config = await GoodsRecieveingApp.App.Database.GetConfig();
@@ -51,22 +59,39 @@ namespace ScannerFDB
                 swWTRF.IsToggled = config.WhseTrfActive;
                 swInvCnt.IsToggled = config.CountActive;
                 swInvoice.IsToggled = config.InvoiceActive;
-                swDelLines.IsToggled = config.DeleteSOLines;
+                //swDelLines.IsToggled = config.DeleteSOLines;
                 txtReceiveUser.Text = config.ReceiveUser.ToString();
                 txtInvoiceUser.Text = config.InvoiceUser.ToString();
                 txtWHTrfUser.Text = config.WhTrfUser.ToString();
-            }           
+                try
+                {
+                    txfAPI.Text = config.DefaultAPI;
+                }
+                catch
+                {
+
+                }
+
+            }
         }
         private async void btnSave_Clicked(object sender, EventArgs e)
         {
-            config.DefaultAccWH = txfAccWH.SelectedItem.ToString();
-            config.DefaultRejWH = txfRejWH.SelectedItem.ToString();
+            try
+            {
+                config.DefaultAccWH = txfAccWH.SelectedItem.ToString();
+                config.DefaultRejWH = txfRejWH.SelectedItem.ToString();
+            }
+            catch
+            {
+
+            }
             config.GRVActive = swGRV.IsToggled;
             config.RepackActive = swRepack.IsToggled;
             config.WhseTrfActive = swWTRF.IsToggled;
             config.CountActive = swInvCnt.IsToggled;
             config.InvoiceActive = swInvoice.IsToggled;
-            config.DeleteSOLines = swDelLines.IsToggled;
+            config.DefaultAPI = txfAPI.Text;
+            //config.DeleteSOLines = swDelLines.IsToggled;
             if (txtReceiveUser.Text.ToString().Length < 1)
             {
                 config.ReceiveUser = "0";
@@ -161,14 +186,14 @@ namespace ScannerFDB
 
         private void swInvoice_Toggled(object sender, ToggledEventArgs e)
         {
-            if (swInvoice.IsToggled)
-            {
-                swDelLines.IsEnabled = true;
-            }
-            else {
-                swDelLines.IsToggled = false;
-                swDelLines.IsEnabled = false;
-            }
+            //if (swInvoice.IsToggled)
+            //{
+            //    swDelLines.IsEnabled = true;
+            //}
+            //else {
+            //    swDelLines.IsToggled = false;
+            //    swDelLines.IsEnabled = false;
+            //}
         }
     }
 }

@@ -22,11 +22,11 @@ namespace WHTransfer
         private ExtendedEntry _currententry;
         IMessage message = DependencyService.Get<IMessage>();
         private string AdminName, WH;
-        private int AdminCode,ColID;
+        private int AdminCode, ColID;
         public AuthOut()
         {
             InitializeComponent();
-            txfUserCode.Focused +=Entry_Focused;
+            txfUserCode.Focused += Entry_Focused;
         }
         protected override void OnAppearing()
         {
@@ -35,25 +35,33 @@ namespace WHTransfer
         }
         private async void BtnDone_Clicked(object sender, EventArgs e)
         {
-            if (await completeOrder())
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                if (await PastelTransferToGit())
+                if (await completeOrder())
                 {
-                    await GoodsRecieveingApp.App.Database.DeleteAllHeaders();
-                    message.DisplayMessage("COMPLETE!", false);
-                    Navigation.RemovePage(Navigation.NavigationStack[4]);
-                    Navigation.RemovePage(Navigation.NavigationStack[3]);
-                    Navigation.RemovePage(Navigation.NavigationStack[2]);
-                    await Navigation.PopAsync();
-                    return;
-                }         
+                    if (await PastelTransferToGit())
+                    {
+                        await GoodsRecieveingApp.App.Database.DeleteAllHeaders();
+                        message.DisplayMessage("COMPLETE!", false);
+                        Navigation.RemovePage(Navigation.NavigationStack[4]);
+                        Navigation.RemovePage(Navigation.NavigationStack[3]);
+                        Navigation.RemovePage(Navigation.NavigationStack[2]);
+                        await Navigation.PopAsync();
+                        return;
+                    }
+                }
+                message.DisplayMessage("There was a error in sending the information", true);
+                Vibration.Vibrate();
             }
-            message.DisplayMessage("There was a error in sending the information", true);
-            Vibration.Vibrate();
+            else
+            {
+                Vibration.Vibrate();
+                message.DisplayMessage("No Internet Connection", true);
+            }
         }
         private async Task<bool> completeOrder()
         {
-            if(await InsertHeader())
+            if (await InsertHeader())
             {
                 UpdateRecords();
                 if (await InsertLines())
@@ -90,12 +98,12 @@ namespace WHTransfer
             catch
             {
 
-            }           
+            }
             return false;
         }
         private void UpdateRecords()
         {
-            OutItems.items.Select(x=> { x.PickerUser = GoodsRecieveingApp.MainPage.UserCode;x.AuthUser = AdminCode; x.iTrfID=ColID; x.WH=WH; return x;}).ToList();
+            OutItems.items.Select(x => { x.PickerUser = GoodsRecieveingApp.MainPage.UserCode; x.AuthUser = AdminCode; x.iTrfID = ColID; x.WH = WH; return x; }).ToList();
         }
         private async Task<bool> InsertLines()
         {
@@ -116,10 +124,10 @@ namespace WHTransfer
                             return false;
                         }
                     }
-                }                
+                }
                 catch
-                {                   
-                    message.DisplayMessage("Error in sending the lines",true);
+                {
+                    message.DisplayMessage("Error in sending the lines", true);
                     Vibration.Vibrate();
                     return false;
                 }
@@ -129,21 +137,28 @@ namespace WHTransfer
         private async void TxfUserCode_TextChanged(object sender, TextChangedEventArgs e)
         {
             await Task.Delay(100);
-            if (txfUserCode.Text.Length>1)
+            if (txfUserCode.Text.Length > 1)
             {
-                Loading.IsVisible = true;
-                if (txfUserCode.Text!=GoodsRecieveingApp.MainPage.UserName&&await CheckUser(txfUserCode.Text)) 
-                { 
-                     AdminName = txfUserCode.Text;
-                     btnDone.IsVisible = true;
-                     Loading.IsVisible = false;
-                     return;
+                if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+                {
+                    Loading.IsVisible = true;
+                    if (txfUserCode.Text != GoodsRecieveingApp.MainPage.UserName && await CheckUser(txfUserCode.Text))
+                    {
+                        AdminName = txfUserCode.Text;
+                        btnDone.IsVisible = true;
+                        Loading.IsVisible = false;
+                        return;
+                    }
                 }
-                    Loading.IsVisible = false;
+                else
+                {
+                    message.DisplayMessage("No Internet Connection", true);
+                }
+                Loading.IsVisible = false;
                 Vibration.Vibrate();
-                message.DisplayMessage("Invalid User",true);
-                    txfUserCode.Text = "";
-                    txfUserCode.Focus();               
+                message.DisplayMessage("Invalid User", true);
+                txfUserCode.Text = "";
+                txfUserCode.Focus();
             }
         }
         private async void Entry_Focused(object sender, FocusEventArgs e)
@@ -256,8 +271,8 @@ namespace WHTransfer
             //}
             //return false;
             return true;
-		}
-		async Task<string> GetGlCode(string itemCode, string WHCode)
+        }
+        async Task<string> GetGlCode(string itemCode, string WHCode)
         {
             RestClient client = new RestClient();
             string path = "GetField";

@@ -75,34 +75,41 @@ namespace WHTransfer
         {
             try
             {
-                RestSharp.RestClient client = new RestSharp.RestClient();
-                string path = "IBTHeader";
-                client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
+                if (Connectivity.NetworkAccess == NetworkAccess.Internet)
                 {
-                    string str = $"GET?";
-                    var Request = new RestSharp.RestRequest();
-                    Request.Resource = str;
-                    Request.Method = RestSharp.Method.GET;
-                    var cancellationTokenSource = new CancellationTokenSource();
-                    var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
-                    if (res.IsSuccessful && res.Content != null)
+                    RestSharp.RestClient client = new RestSharp.RestClient();
+                    string path = "IBTHeader";
+                    client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
                     {
-                        DataSet myds = new DataSet();
-                        myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
-                        foreach (DataRow row in myds.Tables[0].Rows)
+                        string str = $"GET?";
+                        var Request = new RestSharp.RestRequest();
+                        Request.Resource = str;
+                        Request.Method = RestSharp.Method.GET;
+                        var cancellationTokenSource = new CancellationTokenSource();
+                        var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+                        if (res.IsSuccessful && res.Content != null)
                         {
-                            try
+                            DataSet myds = new DataSet();
+                            myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
+                            foreach (DataRow row in myds.Tables[0].Rows)
                             {
-                                headers.Add(new IBTHeader { ID = Convert.ToInt32(row["TrfId"]), TrfDate = row["TrfDate"].ToString(), FromWH = row["FromWH"].ToString(), ToWH = row["ToWH"].ToString(), FromDate = row["FromDate"].ToString(), RecDate = row["RecDate"].ToString(), PickerUser = Convert.ToInt32(row["PickerUser"].ToString()), AuthUser = Convert.ToInt32(row["AuthUser"].ToString()), Active = Convert.ToBoolean(row["Active"]) });
-                                PickerItems.Add(row["TrfId"].ToString());
-                            }
-                            catch
-                            {
+                                try
+                                {
+                                    headers.Add(new IBTHeader { ID = Convert.ToInt32(row["TrfId"]), TrfDate = row["TrfDate"].ToString(), FromWH = row["FromWH"].ToString(), ToWH = row["ToWH"].ToString(), FromDate = row["FromDate"].ToString(), RecDate = row["RecDate"].ToString(), PickerUser = Convert.ToInt32(row["PickerUser"].ToString()), AuthUser = Convert.ToInt32(row["AuthUser"].ToString()), Active = Convert.ToBoolean(row["Active"]) });
+                                    PickerItems.Add(row["TrfId"].ToString());
+                                }
+                                catch
+                                {
 
+                                }
                             }
+                            pickerHeaders.ItemsSource = PickerItems;
                         }
-                        pickerHeaders.ItemsSource = PickerItems;
                     }
+                }
+                else
+                {
+                    message.DisplayMessage("No Internet Connection", true);
                 }
             }
             catch
@@ -128,34 +135,42 @@ namespace WHTransfer
         {
             try
             {
-                RestSharp.RestClient client = new RestSharp.RestClient();
-                string path = "IBTLines";
-                client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
-
-                string str = $"Get?qry=SELECT* FROM tblIBTLines WHERE iTrfId={trf}";
-                var Request = new RestSharp.RestRequest();
-                Request.Resource = str;
-                Request.Method = RestSharp.Method.GET;
-                var cancellationTokenSource = new CancellationTokenSource();
-                var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
-                if (res.IsSuccessful && res.Content != null)
+                if (Connectivity.NetworkAccess == NetworkAccess.Internet)
                 {
-                    DataSet myds = new DataSet();
-                    myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
-                    foreach (DataRow row in myds.Tables[0].Rows)
-                    {
-                        try
-                        {
-                            lines.Add(new IBTItem { ScanBarcode = row["ScanBarcode"].ToString(), ItemBarcode = row["ItemBarcode"].ToString(), ItemCode = row["ItemCode"].ToString(), ItemDesc = row["ItemDesc"].ToString(), ItemQtyOut = Convert.ToInt32(row["ItemQtyOut"]), ItemQtyIn = Convert.ToInt32(row["ItemQtyIn"]), PickerUser = Convert.ToInt32(row["PickerUser"]), AuthUser = Convert.ToInt32(row["AuthUser"]), PickDateTime = Convert.ToDateTime(row["PickDateTime"]), WH = row["WH"].ToString(), iTrfID = Convert.ToInt32(row["iTrfId"]) });
-                        }
-                        catch
-                        {
+                    RestSharp.RestClient client = new RestSharp.RestClient();
+                    string path = "IBTLines";
+                    client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
 
+                    string str = $"Get?qry=SELECT* FROM tblIBTLines WHERE iTrfId={trf}";
+                    var Request = new RestSharp.RestRequest();
+                    Request.Resource = str;
+                    Request.Method = RestSharp.Method.GET;
+                    var cancellationTokenSource = new CancellationTokenSource();
+                    var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+                    if (res.IsSuccessful && res.Content != null)
+                    {
+                        DataSet myds = new DataSet();
+                        myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
+                        foreach (DataRow row in myds.Tables[0].Rows)
+                        {
+                            try
+                            {
+                                lines.Add(new IBTItem { ScanBarcode = row["ScanBarcode"].ToString(), ItemBarcode = row["ItemBarcode"].ToString(), ItemCode = row["ItemCode"].ToString(), ItemDesc = row["ItemDesc"].ToString(), ItemQtyOut = Convert.ToInt32(row["ItemQtyOut"]), ItemQtyIn = Convert.ToInt32(row["ItemQtyIn"]), PickerUser = Convert.ToInt32(row["PickerUser"]), AuthUser = Convert.ToInt32(row["AuthUser"]), PickDateTime = Convert.ToDateTime(row["PickDateTime"]), WH = row["WH"].ToString(), iTrfID = Convert.ToInt32(row["iTrfId"]) });
+                            }
+                            catch
+                            {
+
+                            }
                         }
+                        return true;
                     }
-                    return true;
                 }
-            }            
+                else
+                {
+                    Vibration.Vibrate();
+                    message.DisplayMessage("No Internet Connection", true);
+                }
+            }
             catch
             {
             }
@@ -170,10 +185,19 @@ namespace WHTransfer
             }
             catch (InvalidOperationException)
             {
-                message.DisplayMessage("Sending data...",true);
-                await Complete();
-            }         
-                    
+                if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+                {
+                    message.DisplayMessage("Sending data...", true);
+                    await Complete();
+
+                }
+                else
+                {
+                    Vibration.Vibrate();
+                    message.DisplayMessage("No Internet Connection", true);
+                }
+            }
+
         }
         private async Task Complete()
         {
@@ -182,15 +206,16 @@ namespace WHTransfer
                 DoneItems.Clear();
                 foreach (IBTItem i in lines)
                 {
-                    if (!DoneItems.Contains(i.ItemCode)) {
+                    if (!DoneItems.Contains(i.ItemCode))
+                    {
                         DoneItems.Add(i.ItemCode);
-                        string JnlAcc = await GetGlCode(i.ItemCode,i.WH);
-                        int k = lines.Where(x => x.ItemCode == i.ItemCode).Sum(c=>c.ItemQtyOut);
+                        string JnlAcc = await GetGlCode(i.ItemCode, i.WH);
+                        int k = lines.Where(x => x.ItemCode == i.ItemCode).Sum(c => c.ItemQtyOut);
                         RestSharp.RestClient client2 = new RestSharp.RestClient();
                         string path2 = "WHTransfer";
                         client2.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path2);
                         {
-                            string str2 = $"POST?itemCode={i.ItemCode}&JnlAcc={JnlAcc}&JnlDate={DateTime.Now.ToString("dd MMM yyyy")}&JobCode={i.iTrfID}&Desc={i.iTrfID+"-Transfer items in"}&Ref={DateTime.Now.ToString("ddMMMyyyy")+"-"+i.iTrfID}&Qty={k}&Store={CurrentHeader.ToWH}";
+                            string str2 = $"POST?itemCode={i.ItemCode}&JnlAcc={JnlAcc}&JnlDate={DateTime.Now.ToString("dd MMM yyyy")}&JobCode={i.iTrfID}&Desc={i.iTrfID + "-Transfer items in"}&Ref={DateTime.Now.ToString("ddMMMyyyy") + "-" + i.iTrfID}&Qty={k}&Store={CurrentHeader.ToWH}";
                             var Request2 = new RestSharp.RestRequest();
                             Request2.Resource = str2;
                             Request2.Method = RestSharp.Method.POST;
@@ -198,7 +223,7 @@ namespace WHTransfer
                             var res2 = await client2.ExecuteAsync(Request2, cancellationTokenSource2.Token);
                             if (res2.IsSuccessful && res2.Content != null)
                             {
-                                str2 = $"POST?itemCode={i.ItemCode}&JnlAcc={JnlAcc}&JnlDate={DateTime.Now.ToString("dd MMM yyyy")}&JobCode={i.iTrfID}&Desc={i.iTrfID + "-Transfer items out"}&Ref={DateTime.Now.ToString("ddMMMyyyy") + "-" + i.iTrfID}&Qty={(k/-1)}&Store={CurrentHeader.FromWH}";
+                                str2 = $"POST?itemCode={i.ItemCode}&JnlAcc={JnlAcc}&JnlDate={DateTime.Now.ToString("dd MMM yyyy")}&JobCode={i.iTrfID}&Desc={i.iTrfID + "-Transfer items out"}&Ref={DateTime.Now.ToString("ddMMMyyyy") + "-" + i.iTrfID}&Qty={(k / -1)}&Store={CurrentHeader.FromWH}";
                                 Request2 = new RestSharp.RestRequest();
                                 Request2.Resource = str2;
                                 Request2.Method = RestSharp.Method.POST;
@@ -218,14 +243,14 @@ namespace WHTransfer
                                         var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
                                         if (res.IsSuccessful && res.Content != null)
                                         {
-                                            
+
                                         }
-										else
-										{
-                                            await DisplayAlert("Error","Could not upload","OK");
+                                        else
+                                        {
+                                            await DisplayAlert("Error", "Could not upload", "OK");
                                             return;
                                         }
-                                    } 
+                                    }
                                 }
                                 else
                                 {
@@ -234,8 +259,8 @@ namespace WHTransfer
                                 }
                             }
                             else if (!res2.IsSuccessful && res2.Content != null)
-							{
-                                await DisplayAlert("Error!",""+res2.Content.Substring(res2.Content.IndexOf("Message"),res2.Content.IndexOf("Data")-res2.Content.IndexOf("Message")),"OK");
+                            {
+                                await DisplayAlert("Error!", "" + res2.Content.Substring(res2.Content.IndexOf("Message"), res2.Content.IndexOf("Data") - res2.Content.IndexOf("Message")), "OK");
                                 return;
                             }
                             else
@@ -245,13 +270,13 @@ namespace WHTransfer
                             }
                         }
                     }
-                }               
+                }
             }
-            catch(Exception ed)
+            catch (Exception ed)
             {
                 await DisplayAlert("Error!", "Could not complete", "OK");
                 return;
-            }         
+            }
             await DisplayAlert("Complete", "Transfer complete!", "OK");
             Navigation.RemovePage(Navigation.NavigationStack[2]);
             await Navigation.PopAsync();
@@ -285,7 +310,7 @@ namespace WHTransfer
             return "";
         }
         private async void txfScannedItem_Completed(object sender, EventArgs e)
-		{
+        {
             if (txfScannedItem.Text.Length > 1)
             {
                 //txfScannedItem.Text = GoodsRecieveingApp.MainPage.CalculateCheckDigit(txfScannedItem.Text);
@@ -305,5 +330,5 @@ namespace WHTransfer
                 txfScannedItem.Focus();
             }
         }
-	}
+    }
 }

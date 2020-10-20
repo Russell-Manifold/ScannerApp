@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace InventoryCount
@@ -26,38 +27,48 @@ namespace InventoryCount
         protected async override void OnAppearing()
         {
             base.OnAppearing();
-            RestClient client = new RestClient();
-            string path = "DocumentSQLConnection";
-            client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                string str = $"GET?qry=SELECT * FROM InventoryHeader";
-                var Request = new RestRequest(str, Method.GET);
-                var cancellationTokenSource = new CancellationTokenSource();
-                var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
-                if (res.IsSuccessful && res.Content.Contains("CountID"))
+
+
+                RestClient client = new RestClient();
+                string path = "DocumentSQLConnection";
+                client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
                 {
-                    pickerCountID.Items.Clear();
-                    DataSet myds = new DataSet();
-                    myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
-                    foreach (DataRow row in myds.Tables[0].Rows)
+                    string str = $"GET?qry=SELECT * FROM InventoryHeader";
+                    var Request = new RestRequest(str, Method.GET);
+                    var cancellationTokenSource = new CancellationTokenSource();
+                    var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+                    if (res.IsSuccessful && res.Content.Contains("CountID"))
                     {
-                        CustQty = Convert.ToBoolean(row["AllowCustomQty"]);
-                        WHIDs.Add(""+row["Whse"]);
-                        pickerCountID.Items.Add(""+row["CountID"]+"- "+row["Description"]);
+                        pickerCountID.Items.Clear();
+                        DataSet myds = new DataSet();
+                        myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
+                        foreach (DataRow row in myds.Tables[0].Rows)
+                        {
+                            CustQty = Convert.ToBoolean(row["AllowCustomQty"]);
+                            WHIDs.Add("" + row["Whse"]);
+                            pickerCountID.Items.Add("" + row["CountID"] + "- " + row["Description"]);
+                        }
+                    }
+                    else
+                    {
+                        pickerCountID.Title = "NO COUNTS FOUND";
+                        pickerCountID.IsEnabled = false;
                     }
                 }
-                else
-                {
-                    pickerCountID.Title = "NO COUNTS FOUND";
-                    pickerCountID.IsEnabled = false;
-                }
+                Loading.IsVisible = false;
             }
-            Loading.IsVisible = false;
+            else
+            {
+                Vibration.Vibrate();
+                await DisplayAlert("No Internet Connection", "Please recconect", "OK");
+            }
         }
         private async void Picker_SelectedIndexChanged(object sender, EventArgs e)
         {
             Loading.IsVisible = true;
-            if (pickerCountID.SelectedIndex>-1)
+            if (pickerCountID.SelectedIndex > -1)
             {
                 WH = WHIDs[pickerCountID.SelectedIndex];
                 await Navigation.PushAsync(new CountPage(Convert.ToInt32(pickerCountID.SelectedItem.ToString().Split('-')[0])));

@@ -32,6 +32,39 @@ namespace ScannerFDB
             txfUserBarcode.Text = "";
             await Task.Delay(200);
             txfUserBarcode.Focus();
+            DeviceConfig con = new DeviceConfig();
+            bool isNew = false;
+            try
+            {
+                con = await GoodsRecieveingApp.App.Database.GetConfig();
+                if (con == null)
+                {
+                    con = new DeviceConfig();
+                    isNew = true;
+                    con.DefaultAPI = "";
+                }
+            }
+            catch
+            {
+                isNew = true;
+                con.DefaultAPI = "";
+            }
+            if (con.DefaultAPI == "")
+            {
+                var PathVal = await DisplayPromptAsync("Change API path", "Enter the API path here", "OK", "Cancel", con.DefaultAPI);
+                if (PathVal != "Cancel" && PathVal != "OK" && PathVal.Length > 4)
+                {
+                    con.DefaultAPI = PathVal;
+                    if (isNew)
+                    {
+                        await GoodsRecieveingApp.App.Database.Insert(con);
+                    }
+                    else
+                    {
+                        await GoodsRecieveingApp.App.Database.Update(con);
+                    }
+                }
+            }
         }
         private async void Entry_Focused(object sender, FocusEventArgs e)
         {
@@ -55,6 +88,17 @@ namespace ScannerFDB
             AccessLoading.IsVisible = true;
             try
             {
+                try
+                {
+                    DeviceConfig con = await GoodsRecieveingApp.App.Database.GetConfig();
+                    if (con != null)
+                    {
+                        GoodsRecieveingApp.MainPage.APIPath = con.DefaultAPI;
+                    }
+                }
+                catch
+                {
+                }
                 RestClient client = new RestClient();
                 string path = "GetUser";
                 //client.BaseUrl = new Uri("https://manifoldsa.co.za/FDBAPI/api/" + path);
@@ -98,8 +142,36 @@ namespace ScannerFDB
                     else
                     {
                         AccessLoading.IsVisible = false;
-                        message.DisplayMessage("Error - " + res.ErrorMessage,true);
                         Vibration.Vibrate();
+                        var result = await DisplayAlert("Error invalid access", "Could not get user access" + Environment.NewLine + "Would you like to edit the API path?", "Yes", "No");
+                        if (result)
+                        {
+                            DeviceConfig con = new DeviceConfig();
+                            bool isNew = false;
+                            try
+                            {
+                                con = await GoodsRecieveingApp.App.Database.GetConfig();
+                            }
+                            catch
+                            {
+                                isNew = true;
+                                con.DefaultAPI = "";
+                            }
+                            var PathVal = await DisplayPromptAsync("Change API path", "Enter the API path here", "OK", "Cancel", con.DefaultAPI);
+                            if (PathVal != "Cancel" && PathVal != "OK" && PathVal.Length > 4)
+                            {
+                                con.DefaultAPI = PathVal;
+                                if (isNew)
+                                {
+                                    await GoodsRecieveingApp.App.Database.Insert(con);
+                                }
+                                else
+                                {
+                                    await GoodsRecieveingApp.App.Database.Update(con);
+                                }
+                            }
+                        }
+                        //message.DisplayMessage("Error - " + res.ErrorMessage, true);                     
                         return false;
                     }
                 }
@@ -151,14 +223,20 @@ namespace ScannerFDB
         private async void txfUserBarcode_Completed(object sender, EventArgs e)
         {
             //txfUserBarcode.Text = "USER";
-            
-            if (!(txfUserBarcode.Text.Length < 2))
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                if (!await CheckUser())
+                if (!(txfUserBarcode.Text.Length < 2))
                 {
-                    txfUserBarcode.Text = ""; 
-                    txfUserBarcode.Focus();
+                    if (!await CheckUser())
+                    {
+                        txfUserBarcode.Text = "";
+                        txfUserBarcode.Focus();
+                    }
                 }
+            }
+            else
+            {
+                await DisplayAlert("No Internet!", "Please reconnect to your internet", "OK");
             }
         }
 
@@ -166,14 +244,14 @@ namespace ScannerFDB
         {
             btnOUTWH.IconImageSource = "WHTrfOut.png";
             btnInWH.IconImageSource = "WHTrfINGreen.png";
-            GoodsRecieveingApp.MainPage.APIPath = GoodsRecieveingApp.MainPage.APIPathIN;
+            //GoodsRecieveingApp.MainPage.APIPath = GoodsRecieveingApp.MainPage.APIPathIN;
         }
 
         private void btnOUTWH_Clicked(object sender, EventArgs e)
         {
             btnInWH.IconImageSource = "WHTrfIN.png";
             btnOUTWH.IconImageSource = "WHTrfOutGreen.png";
-            GoodsRecieveingApp.MainPage.APIPath= GoodsRecieveingApp.MainPage.APIPathOUT;
+            //GoodsRecieveingApp.MainPage.APIPath= GoodsRecieveingApp.MainPage.APIPathOUT;
         }
 
         private void txfUserBarcode_TextChanged(object sender, TextChangedEventArgs e)

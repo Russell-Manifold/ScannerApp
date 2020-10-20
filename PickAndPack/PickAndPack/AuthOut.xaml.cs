@@ -14,70 +14,79 @@ using Xamarin.Forms.Xaml;
 
 namespace PickAndPack
 {
-	[XamlCompilation(XamlCompilationOptions.Compile)]
-	public partial class AuthOut : ContentPage
-	{
+    [XamlCompilation(XamlCompilationOptions.Compile)]
+    public partial class AuthOut : ContentPage
+    {
         IMessage message = DependencyService.Get<IMessage>();
         private List<string> CompleteNums = new List<string>();
         private List<string> ErrorDocs = new List<string>();
         private List<string> CompleteCodes = new List<string>();
         private List<DocHeader> DocHeaders = new List<DocHeader>();
         public AuthOut()
-		{
-			InitializeComponent();
+        {
+            InitializeComponent();
             if (!GoodsRecieveingApp.MainPage.AuthDispatch)
             {
                 btnComplete.IsEnabled = false;
             }
-            _ =GetItems();		
+            _ = GetItems();
         }
         public void PopData()
         {
             lstItems.ItemsSource = null;
-            DocHeaders.OrderBy(x=>x.DocNum);
-            lblItemCount.Text="There are "+DocHeaders.Count()+" orders";
+            DocHeaders.OrderBy(x => x.DocNum);
+            lblItemCount.Text = "There are " + DocHeaders.Count() + " orders";
             LodingIndiactor.IsVisible = false;
             lstItems.ItemsSource = DocHeaders;
         }
         private async void BtnComplete_Clicked(object sender, EventArgs e)
         {
+            btnComplete.IsEnabled = false;
             if (GoodsRecieveingApp.MainPage.AuthDispatch)
             {
-                btnComplete.IsEnabled = false;
-                message.DisplayMessage("Saving information!", true);
-                await SendToPastel();
-				if (ErrorDocs.Count>0)
-				{
-                    await DisplayAlert("Error!", "The following documents could not be uploaded", "View");
-					foreach (string s in ErrorDocs)
-					{
-                        await DisplayAlert("Error!", s, "Next");
-                    }
-                }
-                if (CompleteCodes.Count > 0)
+                if (Connectivity.NetworkAccess == NetworkAccess.Internet)
                 {
-                    if (CompleteCodes.Count == 1)
+                    message.DisplayMessage("Saving information!", true);
+                    await SendToPastel();
+                    if (ErrorDocs.Count > 0)
                     {
-                        await DisplayAlert("Complete!", CompleteCodes.Count + " Order Successfully Sent To Invoicing", "OK");
+                        await DisplayAlert("Error!", "The following documents could not be uploaded", "View");
+                        foreach (string s in ErrorDocs)
+                        {
+                            await DisplayAlert("Error!", s, "Next");
+                        }
                     }
-                    else
+                    if (CompleteCodes.Count > 0)
                     {
-                        await DisplayAlert("Complete!", CompleteCodes.Count + " Orders Successfully Sent To Invoicing", "OK");
+                        if (CompleteCodes.Count == 1)
+                        {
+                            await DisplayAlert("Complete!", CompleteCodes.Count + " Order Successfully Sent To Invoicing", "OK");
+                        }
+                        else
+                        {
+                            await DisplayAlert("Complete!", CompleteCodes.Count + " Orders Successfully Sent To Invoicing", "OK");
+                        }
                     }
+                    LodingIndiactor.IsVisible = true;
+                    _ = GetItems();
                 }
-                LodingIndiactor.IsVisible = true;
-                _ = GetItems();
+                else
+                {
+                    Vibration.Vibrate();
+                    message.DisplayMessage("No Internet Connection", true);
+                }
             }
-			else
-			{
+            else
+            {
                 await DisplayAlert("Error!", "You do not have access to send these", "OK");
             }
+            btnComplete.IsEnabled = true;
         }
         private async Task<bool> SendToPastel()
         {
             ErrorDocs.Clear();
-			foreach (string docCode in CompleteNums)
-			{
+            foreach (string docCode in CompleteNums)
+            {
                 List<DocLine> docs = await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docCode);
                 DataTable det = await GetDocDetails(docCode);
                 if (det == null)
@@ -101,47 +110,51 @@ namespace PickAndPack
                     var cancellationTokenSource = new CancellationTokenSource();
                     var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
                     if (res.IsSuccessful && res.Content.Contains("0"))
-                    {                       
-                        CompleteCodes.Add(docCode+" - "+res.Content.Split('|')[1].Replace('"',' ').Trim());                       
+                    {
+                        CompleteCodes.Add(docCode + " - " + res.Content.Split('|')[1].Replace('"', ' ').Trim());
                     }
                     else if (res.IsSuccessful && res.Content.Contains("99"))
                     {
-                        ErrorDocs.Add(docCode+" - "+ res.Content);
-					}else
-					{
-                        // ErrorDocs.Add(docCode);
                         ErrorDocs.Add(docCode + " - " + res.Content);
+                    }
+                    else
+                    {
+                        ErrorDocs.Add(docCode);
                     }
                 }
             }
-			foreach (string s in CompleteCodes)
-			{
+            foreach (string s in CompleteCodes)
+            {
                 CompleteNums.Remove(s.Trim().Split(' ')[0]);
                 await SQLRemove(s.Trim().Split(' ')[0]);
-			}
+            }
             return true;
         }
         string CreateDocHeader(DataTable det)
         {
             DataRow CurrentRow = det.Rows[0];
-            string ret = $"||N|{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1";
+            string ret = $"{CurrentRow["ExtRef"].ToString()}||N|{CurrentRow["CustomerCode"].ToString()}|{DateTime.Now.ToString("dd/MM/yyyy")}|{CurrentRow["OrderNumber"].ToString()}|N|0|{CurrentRow["Message_1"].ToString()}|{CurrentRow["Message_2"].ToString()}|{CurrentRow["Message_3"].ToString()}|{CurrentRow["Address1"].ToString()}|{CurrentRow["Address2"].ToString()}|{CurrentRow["Address3"].ToString()}|{CurrentRow["Address4"].ToString()}|||{CurrentRow["SalesmanCode"].ToString()}||{Convert.ToDateTime(CurrentRow["Due_Date"]).ToString("dd/MM/yyyy")}||||1";
             return ret.Replace('&', '+').Replace('\'', ' ');
             //||Y|ACK001                                 |05/03/1999                           |                                      |N|0|Message no.1                        |Message no.2                        |Message no.3                        |Delivery no.1                      |Delivery no.2                      |Delivery no.3                      |Delivery no.4                      |||00                                     ||05/03/1999                                                         |011-7402156|Johnny|011-7402157|1
         }
-       async Task<string> CreateDocLines(List<DocLine> d, DataTable det)
+        async Task<string> CreateDocLines(List<DocLine> d, DataTable det)
         {
             string s = "";
             foreach (string CurrItem in d.Where(x => x.PalletNum == 0).Select(x => x.ItemCode).Distinct())
             {
                 DataRow CurrentRow = det.Select($"ItemCode='{CurrItem}'").FirstOrDefault();
+                if (CurrentRow["TaxType"].ToString().Length == 1)
+                {
+                    CurrentRow["TaxType"] = "0" + CurrentRow["TaxType"].ToString();
+                }
                 if (CurrentRow != null)
-                    s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',','.')}|{CurrentRow["ItemQty"].ToString().Replace(',', '.')}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{CurrentRow["WHID"].ToString()}|%23";
+                    s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{CurrentRow["WHID"].ToString()}%23";
                 //                                 285 | 1                                | 350.88                         | 400.00                           | EACH                          | 01                               |                                   |                                   | ACC /                             |                       Description |4|001             
             }
-            return s;
+            return s.Replace(',','.');
         }
         private async Task SQLRemove(string doc)
-		{
+        {
             RestClient client = new RestClient();
             string path = "DocumentSQLConnection";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
@@ -205,11 +218,11 @@ namespace PickAndPack
                         DocHeader dh = new DocHeader();
                         dh.DocNum = row["DocNum"].ToString();
                         try
-						{
+                        {
                             dh.AcctCode = row["AcctCode"].ToString();
                         }
-						catch
-						{
+                        catch
+                        {
                             dh.AcctCode = "";
                         }
                         try
@@ -244,15 +257,15 @@ namespace PickAndPack
                 client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
                 {
                     await GetAllHeaders();
-					if (CompleteNums.Count==0)
-					{
-                        await DisplayAlert("Done","There are no futher outstanding orders to complete!","OK");
+                    if (CompleteNums.Count == 0)
+                    {
+                        await DisplayAlert("Done", "There are no futher outstanding orders to complete!", "OK");
                         await Navigation.PopAsync();
                         return false;
-					}
+                    }
                     foreach (string strNum in CompleteNums)
-					{
-                        string str = $"GET?qry=SELECT * FROM tblTempDocLines WHERE DocNum='"+strNum+"'";
+                    {
+                        string str = $"GET?qry=SELECT * FROM tblTempDocLines WHERE DocNum='" + strNum + "'";
                         var Request = new RestSharp.RestRequest();
                         Request.Resource = str;
                         Request.Method = RestSharp.Method.GET;
@@ -324,7 +337,7 @@ namespace PickAndPack
         private async Task<bool> RemoveAllOld(string docNum)
         {
             try
-            {               
+            {
                 foreach (DocLine dl in (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docNum)))
                 {
                     await GoodsRecieveingApp.App.Database.Delete(dl);

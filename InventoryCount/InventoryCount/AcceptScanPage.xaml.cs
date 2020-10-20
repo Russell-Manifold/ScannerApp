@@ -22,8 +22,8 @@ namespace InventoryCount
         private ExtendedEntry _currententry;
         IMessage message = DependencyService.Get<IMessage>();
         InventoryItem i = new InventoryItem();
-        int ActualQTY=0;
-        public AcceptScanPage(InventoryItem ite,int Actual)
+        int ActualQTY = 0;
+        public AcceptScanPage(InventoryItem ite, int Actual)
         {
             InitializeComponent();
             txfUserCode.Focused += Entry_Focused;
@@ -33,77 +33,85 @@ namespace InventoryCount
         protected override void OnAppearing()
         {
             base.OnAppearing();
-            lblInfo.Text = "Approve QTY for:\n"+i.ItemDesc+"\nFirst Count: "+i.FirstScanQty+"\nSecond Count: "+i.SecondScanQty+"\n";
+            lblInfo.Text = "Approve QTY for:\n" + i.ItemDesc + "\nFirst Count: " + i.FirstScanQty + "\nSecond Count: " + i.SecondScanQty + "\n";
             txfUserCode.Focus();
         }
         private async void txfUserCode_Completed(object sender, EventArgs e)
         {
-            LoadingIndicator.IsVisible = true;
-            //xfUserCode.Text =GoodsRecieveingApp.MainPage.CalculateCheckDigit(txfUserCode.Text);
-            try
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
-                RestClient client = new RestClient();
-                string path = "GetUser";
-                //client.BaseUrl = new Uri("https://manifoldsa.co.za/FDBAPI/api/" + path);
-                client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
+                LoadingIndicator.IsVisible = true;
+                //xfUserCode.Text =GoodsRecieveingApp.MainPage.CalculateCheckDigit(txfUserCode.Text);
+                try
                 {
-                    string str = $"GET?UserName={txfUserCode.Text}";
-                    var Request = new RestRequest(str, Method.GET);
-                    var cancellationTokenSource = new CancellationTokenSource();
-                    var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
-                    if (res.IsSuccessful && res.Content.Contains("UserName"))
+                    RestClient client = new RestClient();
+                    string path = "GetUser";
+                    //client.BaseUrl = new Uri("https://manifoldsa.co.za/FDBAPI/api/" + path);
+                    client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
                     {
-                        bool inv = false;
-                        int id = 0;
-                        DataSet myds = new DataSet();
-                        myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
-                        foreach (DataRow row in myds.Tables[0].Rows)
-                        {                           
-                            inv = Convert.ToBoolean(row["InvReCountAUTH"]);
-                            id = Convert.ToInt32(row["Id"].ToString());
-                        }
-                        if (inv)
+                        string str = $"GET?UserName={txfUserCode.Text}";
+                        var Request = new RestRequest(str, Method.GET);
+                        var cancellationTokenSource = new CancellationTokenSource();
+                        var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+                        if (res.IsSuccessful && res.Content.Contains("UserName"))
                         {
-                            CountPage.items.Where(x => x.ItemCode == i.ItemCode).Select(x=> { x.SecondScanAuth = id;x.Complete = true;return x; });
-							if (await SendToPastel())
-							{
-                                await Navigation.PopAsync();
-							}
-							else
-							{
-                                await DisplayAlert("Error could not adjust in system","Please try again!","OK");
-							}
-                            
+                            bool inv = false;
+                            int id = 0;
+                            DataSet myds = new DataSet();
+                            myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
+                            foreach (DataRow row in myds.Tables[0].Rows)
+                            {
+                                inv = Convert.ToBoolean(row["InvReCountAUTH"]);
+                                id = Convert.ToInt32(row["Id"].ToString());
+                            }
+                            if (inv)
+                            {
+                                CountPage.items.Where(x => x.ItemCode == i.ItemCode).Select(x => { x.SecondScanAuth = id; x.Complete = true; return x; });
+                                if (await SendToPastel())
+                                {
+                                    await Navigation.PopAsync();
+                                }
+                                else
+                                {
+                                    await DisplayAlert("Error could not adjust in system", "Please try again!", "OK");
+                                }
+
+                            }
                         }
-                    }
-                    else
-                    {
-                        LoadingIndicator.IsVisible = false;
-                        message.DisplayMessage("Invalid user!", true);
-                        Vibration.Vibrate();
-                        txfUserCode.Text = "";
-                        txfUserCode.Focus();
-                        return;
+                        else
+                        {
+                            LoadingIndicator.IsVisible = false;
+                            message.DisplayMessage("Invalid user!", true);
+                            Vibration.Vibrate();
+                            txfUserCode.Text = "";
+                            txfUserCode.Focus();
+                            return;
+                        }
                     }
                 }
+                catch
+                {
+                    LoadingIndicator.IsVisible = false;
+                    message.DisplayMessage("Invalid user!", true);
+                    Vibration.Vibrate();
+                    txfUserCode.Text = "";
+                    txfUserCode.Focus();
+                    return;
+                }
             }
-            catch
+            else
             {
-                LoadingIndicator.IsVisible = false;
-                message.DisplayMessage("Invalid user!", true);
                 Vibration.Vibrate();
-                txfUserCode.Text = "";
-                txfUserCode.Focus();
-                return;
+                message.DisplayMessage("No Internet Connection", true);
             }
         }
         private async Task<bool> SendToPastel()
         {
             string Store = InvLandingPage.WH;
-            string JobCode="Inventory count ADJ";
-            string Ref="Inventory count Stock ADJ";
+            string JobCode = "Inventory count ADJ";
+            string Ref = "Inventory count Stock ADJ";
             string JnlAcc = await GetGlCode(i.ItemCode, Store);
-            int QTY = Convert.ToInt32(i.SecondScanQty,CultureInfo.InvariantCulture.NumberFormat) - ActualQTY;        
+            int QTY = Convert.ToInt32(i.SecondScanQty, CultureInfo.InvariantCulture.NumberFormat) - ActualQTY;
             if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
                 RestClient client = new RestClient();

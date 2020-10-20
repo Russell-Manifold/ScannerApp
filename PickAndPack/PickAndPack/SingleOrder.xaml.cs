@@ -26,10 +26,10 @@ namespace PickAndPack
             InitializeComponent();
             txfSOCode.Focused += Entry_Focused;
             txfItemCode.Focused += Entry_Focused;
-            _= checkCompete();         
+            _ = checkCompete();
         }
         private async Task checkCompete()
-		{
+        {
             if (await CompleteCheck())
             {
                 CompletedStack.IsVisible = true;
@@ -66,12 +66,13 @@ namespace PickAndPack
                 LodingIndiactor.IsVisible = true;
                 if (await GetItems(txfSOCode.Text.ToUpper()))
                 {
-                    if(!await PalletCheck()){
+                    if (!await PalletCheck())
+                    {
                         LodingIndiactor.IsVisible = false;
                         await Navigation.PopAsync();
                         return;
                     }
-                    if(!await GetPallets(txfSOCode.Text.ToUpper()))
+                    if (!await GetPallets(txfSOCode.Text.ToUpper()))
                     {
                         LodingIndiactor.IsVisible = false;
                         await Navigation.PopAsync();
@@ -81,16 +82,16 @@ namespace PickAndPack
                     DocLine d = new DocLine();
 
                     try
-					{
-                       d = await GoodsRecieveingApp.App.Database.GetOneSpecificDocAsync(txfSOCode.Text.ToUpper());
+                    {
+                        d = await GoodsRecieveingApp.App.Database.GetOneSpecificDocAsync(txfSOCode.Text.ToUpper());
                     }
                     catch (Exception ef)
-					{
-					}
-                    txfSOCode.IsEnabled=false;
+                    {
+                    }
+                    txfSOCode.IsEnabled = false;
                     txfSOCode.IsVisible = false;
                     try
-                    {                       
+                    {
                         await GoodsRecieveingApp.App.Database.Delete(await GoodsRecieveingApp.App.Database.GetHeader(d.DocNum));
                     }
                     catch
@@ -99,7 +100,7 @@ namespace PickAndPack
                     }
                     await GoodsRecieveingApp.App.Database.Insert(new DocHeader { DocNum = txfSOCode.Text.ToUpper(), PackerUser = GoodsRecieveingApp.MainPage.UserCode, AccName = d.SupplierName, AcctCode = d.SupplierCode });
                     LodingIndiactor.IsVisible = false;
-                    lblPalletNumber.Text = ""+currentPallet;
+                    lblPalletNumber.Text = "" + currentPallet;
                     ToolbarItem item = new ToolbarItem
                     {
                         IconImageSource = "ViewAll.png",
@@ -119,7 +120,6 @@ namespace PickAndPack
                 }
             }
         }
-        //Russell will make a Var to control thre check
         async Task<bool> PalletCheck()
         {
             if (Connectivity.NetworkAccess == NetworkAccess.Internet)
@@ -138,22 +138,22 @@ namespace PickAndPack
                     {
                         DataSet myds = new DataSet();
                         myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
-                        if (!(myds.Tables[0].Rows.Count>1))
+                        if (!(myds.Tables[0].Rows.Count > 1))
                         {
-                            if (myds.Tables[0].Rows.Count==1)
+                            if (myds.Tables[0].Rows.Count == 1)
                             {
                                 //if (!isMultiPallet)
                                 //{
-                                 //   Vibration.Vibrate();
-                                  //  message.DisplayMessage("This order has been started as a single pallet", true);                                   
-                                  //  return false;
-                               // }
+                                //   Vibration.Vibrate();
+                                //  message.DisplayMessage("This order has been started as a single pallet", true);                                   
+                                //  return false;
+                                // }
                             }
                         }
                     }
                     else
                     {
-                        if(!await AddPallet(txfSOCode.Text.ToUpper()))
+                        if (!await AddPallet(txfSOCode.Text.ToUpper()))
                         {
                             return false;
                         }
@@ -227,19 +227,19 @@ namespace PickAndPack
                                         Doc.Balacnce = 0;
                                     }
                                     currentPallet = Doc.PalletNum;
-                                    if (Convert.ToInt32(Doc.Balacnce)==-1)
+                                    if (Convert.ToInt32(Doc.Balacnce) == -1)
                                     {
                                         Doc.Balacnce = 0;
                                     }
                                     Doc.ItemQty = Convert.ToInt32(row["ItemQty"].ToString().Trim());
-                                    lblSOCode.Text = Doc.SupplierName + " - " + Doc.DocNum ;
+                                    lblSOCode.Text = Doc.SupplierName + " - " + Doc.DocNum;
                                     await GoodsRecieveingApp.App.Database.Insert(Doc);
                                 }
                                 catch (Exception ex)
                                 {
                                     LodingIndiactor.IsVisible = false;
                                     Vibration.Vibrate();
-                                    message.DisplayMessage("Error In Server!!"+ex, true);
+                                    message.DisplayMessage("Error In Server!!" + ex, true);
                                     return false;
                                 }
                             }
@@ -278,17 +278,17 @@ namespace PickAndPack
         }
         private async void btnViewSO_Clicked(object sender, EventArgs e)
         {
-                message.DisplayMessage("Loading...", false);
-                try
-                {
-                    await GoodsRecieveingApp.App.Database.GetOneSpecificDocAsync(txfSOCode.Text.ToUpper());
-                    await Navigation.PushAsync(new ViewItems(txfSOCode.Text.ToUpper()));
-                }
-                catch
-                {
-                    Vibration.Vibrate();
-                    message.DisplayMessage("Error!Could not load SO", false);
-                }                           
+            message.DisplayMessage("Loading...", false);
+            try
+            {
+                await GoodsRecieveingApp.App.Database.GetOneSpecificDocAsync(txfSOCode.Text.ToUpper());
+                await Navigation.PushAsync(new ViewItems(txfSOCode.Text.ToUpper()));
+            }
+            catch
+            {
+                Vibration.Vibrate();
+                message.DisplayMessage("Error!Could not load SO", false);
+            }
         }
         private async void txfItemCode_Completed(object sender, EventArgs e)
         {
@@ -316,7 +316,7 @@ namespace PickAndPack
                         int i = docs.Sum(x => x.ScanAccQty);
                         if (i + bi.Qty <= docs.First().ItemQty)
                         {
-                            DocLine docline = new DocLine { Balacnce = 0, Complete = "No", DocNum = txfSOCode.Text.ToUpper(), isRejected = false, ItemBarcode = docs.First().ItemBarcode, ItemDesc = docs.First().ItemDesc, ItemCode = docs.First().ItemCode, ItemQty = docs.First().ItemQty, PalletNum = currentPallet, ScanAccQty = bi.Qty};
+                            DocLine docline = new DocLine { Balacnce = 0, Complete = "No", DocNum = txfSOCode.Text.ToUpper(), isRejected = false, ItemBarcode = docs.First().ItemBarcode, ItemDesc = docs.First().ItemDesc, ItemCode = docs.First().ItemCode, ItemQty = docs.First().ItemQty, PalletNum = currentPallet, ScanAccQty = bi.Qty };
                             await GoodsRecieveingApp.App.Database.Insert(docline);
                             await RefreshList();
                         }
@@ -340,7 +340,7 @@ namespace PickAndPack
                         int i = docs.Sum(x => x.ScanAccQty);
                         if (i + 1 <= docs.First().ItemQty)
                         {
-                            DocLine docline = new DocLine { Balacnce = 0, Complete = "No", DocNum = txfSOCode.Text.ToUpper(), isRejected = false, ItemBarcode = txfItemCode.Text, ItemDesc = docs.First().ItemDesc, ItemCode = docs.First().ItemCode, ItemQty = docs.First().ItemQty, PalletNum = currentPallet, ScanAccQty = 1};
+                            DocLine docline = new DocLine { Balacnce = 0, Complete = "No", DocNum = txfSOCode.Text.ToUpper(), isRejected = false, ItemBarcode = txfItemCode.Text, ItemDesc = docs.First().ItemDesc, ItemCode = docs.First().ItemCode, ItemQty = docs.First().ItemQty, PalletNum = currentPallet, ScanAccQty = 1 };
                             await GoodsRecieveingApp.App.Database.Insert(docline);
                             await RefreshList();
                         }
@@ -391,7 +391,7 @@ namespace PickAndPack
         }
         async Task<bool> CheckOrderBarcode(string Code)
         {
-            List<DocLine> docs =(await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text.ToUpper())).Where(x=>x.ItemBarcode==Code).ToList();
+            List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text.ToUpper())).Where(x => x.ItemBarcode == Code).ToList();
             if (docs.Count == 0)
                 return false;
 
@@ -400,16 +400,17 @@ namespace PickAndPack
         async Task<bool> CheckOrderItemCode(string Code)
         {
             List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text.ToUpper())).Where(x => x.ItemCode == Code).ToList();
-            if (docs.Count==0)
+            if (docs.Count == 0)
                 return false;
 
             return true;
         }
         async Task RefreshList()
         {
-            try{
+            try
+            {
                 lstItems.ItemsSource = null;
-                List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text.ToUpper())).Where(x => x.PalletNum == currentPallet || x.ScanAccQty == 0).OrderBy(s=>s.Bin).ToList(); 
+                List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text.ToUpper())).Where(x => x.PalletNum == currentPallet || x.ScanAccQty == 0).OrderBy(s => s.Bin).ToList();
                 if (docs == null)
                     return;
                 List<DocLine> displayDocs = new List<DocLine>();
@@ -419,7 +420,7 @@ namespace PickAndPack
                     TempDoc.ScanAccQty = docs.Where(x => x.ItemDesc == s).Sum(x => x.ScanAccQty);
                     TempDoc.ItemQty = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text.ToUpper())).Where(x => x.ItemDesc == s).First().ItemQty;
                     TempDoc.PalletNum = currentPallet;
-                    TempDoc.Balacnce = TempDoc.ItemQty - (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text.ToUpper())).Where(x => x.ItemDesc == s).Sum(x=>x.ScanAccQty);
+                    TempDoc.Balacnce = TempDoc.ItemQty - (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text.ToUpper())).Where(x => x.ItemDesc == s).Sum(x => x.ScanAccQty);
                     if (TempDoc.Balacnce == 0)
                     {
                         TempDoc.Complete = "Yes";
@@ -439,9 +440,9 @@ namespace PickAndPack
             catch (Exception ec)
             {
                 Vibration.Vibrate();
-                message.DisplayMessage("Could not load SO"+ec,true);
+                message.DisplayMessage("Could not load SO" + ec, true);
             }
-           
+
         }
         private async void lstItems_ItemSelected(object sender, SelectedItemChangedEventArgs e)
         {
@@ -451,23 +452,23 @@ namespace PickAndPack
             {
                 case "NO":
                     break;
-                case "YES":                    
-                        await GoodsRecieveingApp.App.Database.DeleteAllWithItemWithFilter(dl);
-                        await RefreshList();                    
+                case "YES":
+                    await GoodsRecieveingApp.App.Database.DeleteAllWithItemWithFilter(dl);
+                    await RefreshList();
                     break;
             }
         }
         private async void btnPrevPallet_Clicked(object sender, EventArgs e)
         {
-            if (currentPallet==AllPallets.First())
+            if (currentPallet == AllPallets.First())
             {
                 Vibration.Vibrate();
                 message.DisplayMessage("This is the first pallet", false);
             }
             else
             {
-                currentPallet = AllPallets[AllPallets.IndexOf(currentPallet-1)];
-                lblPalletNumber.Text = ""+currentPallet;
+                currentPallet = AllPallets[AllPallets.IndexOf(currentPallet - 1)];
+                lblPalletNumber.Text = "" + currentPallet;
                 await RefreshList();
             }
             txfItemCode.Focus();
@@ -491,7 +492,7 @@ namespace PickAndPack
                         string s = res.Content.Replace('"', ' ').Replace('\\', ' ').Trim();
                         foreach (string strin in s.Split('|'))
                         {
-                            if (strin!="")
+                            if (strin != "")
                             {
                                 try
                                 {
@@ -501,7 +502,8 @@ namespace PickAndPack
                                         AllPallets.Sort();
                                     }
                                 }
-                                catch{
+                                catch
+                                {
                                 }
                             }
                         }
@@ -528,25 +530,25 @@ namespace PickAndPack
             {
                 if (dl.PalletNum == currentPallet)
                 {
-                    if (currentPallet==AllPallets.Last())
+                    if (currentPallet == AllPallets.Last())
                     {
-                        if(!await AddPallet(txfSOCode.Text.ToUpper()))
+                        if (!await AddPallet(txfSOCode.Text.ToUpper()))
                         {
                             Vibration.Vibrate();
-                            message.DisplayMessage("Pallet could not be added",true);
+                            message.DisplayMessage("Pallet could not be added", true);
                             return;
                         }
                         if (!AllPallets.Contains(currentPallet))
                         {
                             AllPallets.Add(currentPallet);
                             AllPallets.Sort();
-                        }                       
+                        }
                     }
                     else
                     {
-                        currentPallet = AllPallets[(AllPallets.IndexOf(currentPallet)+1)];
-                    }            
-                    lblPalletNumber.Text =""+currentPallet;
+                        currentPallet = AllPallets[(AllPallets.IndexOf(currentPallet) + 1)];
+                    }
+                    lblPalletNumber.Text = "" + currentPallet;
                     await RefreshList();
                     txfItemCode.Focus();
                     return;
@@ -575,16 +577,16 @@ namespace PickAndPack
                     {
                         DataSet myds = new DataSet();
                         myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
-                        int maxpal=0;
+                        int maxpal = 0;
                         try
                         {
                             maxpal = Convert.ToInt32(myds.Tables[0].Rows[0]["MAXPall"]);
                         }
                         catch
                         {
-                             maxpal = 0;
-                        }                       
-                        await NewPallet(maxpal+1);
+                            maxpal = 0;
+                        }
+                        await NewPallet(maxpal + 1);
                     }
                     else
                     {
@@ -660,7 +662,7 @@ namespace PickAndPack
                 List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(s)).ToList();
                 foreach (string str in docs.Select(x => x.ItemDesc).Distinct())
                 {
-                    foreach (int ints in docs.Where(x=>x.PalletNum!=0&&x.ItemDesc==str).Select(x => x.PalletNum).Distinct())
+                    foreach (int ints in docs.Where(x => x.PalletNum != 0 && x.ItemDesc == str).Select(x => x.PalletNum).Distinct())
                     {
                         row = t1.NewRow();
                         row["DocNum"] = docs.Select(x => x.DocNum).FirstOrDefault();
@@ -734,7 +736,7 @@ namespace PickAndPack
         private async void btnComplete_Clicked(object sender, EventArgs e)
         {
             await SaveData();
-            btnViewSO_Clicked(null,null);
+            btnViewSO_Clicked(null, null);
         }
     }
 }

@@ -20,8 +20,8 @@ namespace PickAndPack
     {
         IMessage message = DependencyService.Get<IMessage>();
         private ExtendedEntry _currententry;
-        bool firstSO=true;
-        int currentPallet=0;
+        bool firstSO = true;
+        int currentPallet = 0;
         public SinglePallet()
         {
             InitializeComponent();
@@ -34,7 +34,7 @@ namespace PickAndPack
             txfSOCode.Focused += Entry_Focused;
             txfItemCode.Focused += Entry_Focused;
             txfSOCode.Text = SONumber;
-            txfSOCode_Completed(null,null);
+            txfSOCode_Completed(null, null);
         }
         protected override void OnAppearing()
         {
@@ -51,7 +51,7 @@ namespace PickAndPack
                     string path = "GetDocument";
                     client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
                     {
-                        string str = $"GET?qrystr=ACCHISTL|6|{code}|102|"+GoodsRecieveingApp.MainPage.UserCode;
+                        string str = $"GET?qrystr=ACCHISTL|6|{code}|102|" + GoodsRecieveingApp.MainPage.UserCode;
                         var Request = new RestSharp.RestRequest();
                         Request.Resource = str;
                         Request.Method = RestSharp.Method.GET;
@@ -61,7 +61,7 @@ namespace PickAndPack
                         {
                             if (!firstSO)
                             {
-                                if(!await PalletAddSO())
+                                if (!await PalletAddSO())
                                 {
                                     return false;
                                 }
@@ -104,14 +104,14 @@ namespace PickAndPack
                                     lblCusName.Text = Doc.SupplierName;
                                     await GoodsRecieveingApp.App.Database.Insert(Doc);
                                 }
-                                catch (Exception )
+                                catch (Exception)
                                 {
                                     LodingIndiactor.IsVisible = false;
                                     Vibration.Vibrate();
                                     message.DisplayMessage("Error In Server!!", true);
                                     return false;
                                 }
-                            }                            
+                            }
                             return true;
                         }
                         else
@@ -167,7 +167,7 @@ namespace PickAndPack
         {
             if (txfItemCode.Text.Length != 0)
             {
-               // txfItemCode.Text = GoodsRecieveingApp.MainPage.CalculateCheckDigit(txfItemCode.Text);
+                // txfItemCode.Text = GoodsRecieveingApp.MainPage.CalculateCheckDigit(txfItemCode.Text);
                 if (txfItemCode.Text.Length == 8)
                 {
                     BOMItem bi = new BOMItem();
@@ -213,7 +213,7 @@ namespace PickAndPack
                         int i = docs.Sum(x => x.ScanAccQty);
                         if (i + 1 <= docs.First().ItemQty)
                         {
-                            DocLine docline = new DocLine { Balacnce = 0, Complete = "No", DocNum = txfSOCode.Text, isRejected = false, ItemBarcode = txfItemCode.Text, ItemDesc = docs.First().ItemDesc, ItemCode = docs.First().ItemCode, ItemQty = docs.First().ItemQty, PalletNum = currentPallet, ScanAccQty = 1};
+                            DocLine docline = new DocLine { Balacnce = 0, Complete = "No", DocNum = txfSOCode.Text, isRejected = false, ItemBarcode = txfItemCode.Text, ItemDesc = docs.First().ItemDesc, ItemCode = docs.First().ItemCode, ItemQty = docs.First().ItemQty, PalletNum = currentPallet, ScanAccQty = 1 };
                             await GoodsRecieveingApp.App.Database.Insert(docline);
                             await RefreshList();
                         }
@@ -294,9 +294,9 @@ namespace PickAndPack
                     {
                         DataSet myds = new DataSet();
                         myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
-                        if (myds.Tables[0].Rows.Count==1)
+                        if (myds.Tables[0].Rows.Count == 1)
                         {
-                            if (!myds.Tables[0].Rows[0]["PalletID"].ToString().Contains(currentPallet+""))
+                            if (!myds.Tables[0].Rows[0]["PalletID"].ToString().Contains(currentPallet + ""))
                             {
                                 Vibration.Vibrate();
                                 message.DisplayMessage("This order has been started on a different pallet", true);
@@ -316,7 +316,7 @@ namespace PickAndPack
                         if (!await AddToPallet(txfSOCode.Text))
                         {
                             return false;
-                        }                      
+                        }
                     }
                 }
             }
@@ -367,8 +367,8 @@ namespace PickAndPack
             message.DisplayMessage("Loading...", false);
             try
             {
-                string result = await DisplayActionSheet("Are you sure you would like to close this SO?","YES","NO");
-                if (result=="YES")
+                string result = await DisplayActionSheet("Are you sure you would like to close this SO?", "YES", "NO");
+                if (result == "YES")
                 {
                     await Navigation.PushAsync(new SinglePallet((sender as ToolbarItem).Text));
                     Navigation.RemovePage(Navigation.NavigationStack[3]);
@@ -389,11 +389,20 @@ namespace PickAndPack
                 case "NO":
                     break;
                 case "YES":
-                    if(await ResetItem(dl)){
-                        await GoodsRecieveingApp.App.Database.DeleteAllWithItemWithFilter(dl);
-                        await RefreshList();
+                    if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+                    {
+                        if (await ResetItem(dl))
+                        {
+                            await GoodsRecieveingApp.App.Database.DeleteAllWithItemWithFilter(dl);
+                            await RefreshList();
+                        }
                     }
-                 break;           
+                    else
+                    {
+                        Vibration.Vibrate();
+                        message.DisplayMessage("No Internet Connection", true);
+                    }
+                    break;
             }
         }
         private async Task<bool> ResetItem(DocLine doc)
@@ -447,71 +456,82 @@ namespace PickAndPack
         }
         private async void txfSOCode_Completed(object sender, EventArgs e)
         {
-            if (txfSOCode.Text.Length != 0)
-            {                
-                LodingIndiactor.IsVisible = true;
-                if (await GetItems(txfSOCode.Text.ToUpper()))
-                {                    
-                    if(!await PalletCheck(txfSOCode.Text))
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
+            {
+                if (txfSOCode.Text.Length != 0)
+                {
+                    LodingIndiactor.IsVisible = true;
+                    if (await GetItems(txfSOCode.Text.ToUpper()))
                     {
+                        if (!await PalletCheck(txfSOCode.Text))
+                        {
+                            LodingIndiactor.IsVisible = false;
+                            txfSOCode.Text = "";
+                            txfSOCode.Focus();
+                        }
+                        DocLine d = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text)).First();
+                        txfSOCode.IsEnabled = false;
+                        txfSOCode.IsVisible = false;
+                        lblSOCode.IsVisible = false;
+                        try
+                        {
+                            await GoodsRecieveingApp.App.Database.Delete(await GoodsRecieveingApp.App.Database.GetHeader(d.DocNum));
+                        }
+                        catch { }
+                        await GoodsRecieveingApp.App.Database.Insert(new DocHeader { DocNum = txfSOCode.Text, PackerUser = GoodsRecieveingApp.MainPage.UserCode, AccName = d.SupplierName, AcctCode = d.SupplierCode });
                         LodingIndiactor.IsVisible = false;
+                        SOCodeLayout.IsVisible = false;
+                        ItemCodeLayout.IsVisible = true;
+                        AddSoLayout.IsVisible = true;
+                        GridLayout.IsVisible = true;
+                        string SONumbers = await GetAllSONumbers(currentPallet);
+                        if (SONumbers == "")
+                        {
+                            SONumbers = txfSOCode.Text + "|";
+                        }
+                        List<string> codes = new List<string>();
+                        foreach (ToolbarItem items in this.ToolbarItems)
+                        {
+                            codes.Add(items.Text);
+                        }
+                        foreach (string str in SONumbers.Split('|'))
+                        {
+                            if (str.Length > 1)
+                            {
+                                if (!codes.Contains(str))
+                                {
+                                    ToolbarItem item = new ToolbarItem
+                                    {
+                                        Text = str,
+                                        Order = ToolbarItemOrder.Secondary
+                                    };
+                                    item.Clicked += btnViewSO_Clicked;
+                                    this.ToolbarItems.Add(item);
+                                }
+                            }
+                        }
+                        await RefreshList();
+                        txfItemCode.Focus();
+                    }
+                    else
+                    {
                         txfSOCode.Text = "";
                         txfSOCode.Focus();
-                    }                                             
-                    DocLine d = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text)).First();
-                    txfSOCode.IsEnabled = false;
-                    txfSOCode.IsVisible = false;
-                    lblSOCode.IsVisible = false;
-                    try
-                    {
-                        await GoodsRecieveingApp.App.Database.Delete(await GoodsRecieveingApp.App.Database.GetHeader(d.DocNum));
                     }
-                    catch{}
-                    await GoodsRecieveingApp.App.Database.Insert(new DocHeader { DocNum = txfSOCode.Text, PackerUser = GoodsRecieveingApp.MainPage.UserCode, AccName = d.SupplierName, AcctCode = d.SupplierCode });
-                    LodingIndiactor.IsVisible = false;
-                    SOCodeLayout.IsVisible = false;
-                    ItemCodeLayout.IsVisible = true;
-                    AddSoLayout.IsVisible = true;
-                    GridLayout.IsVisible = true;
-                    string SONumbers = await GetAllSONumbers(currentPallet);
-                    if (SONumbers=="")
-                    {
-                        SONumbers = txfSOCode.Text+"|";
-                    }
-                    List<string> codes = new List<string>();
-                    foreach (ToolbarItem items in this.ToolbarItems)
-                    {
-                        codes.Add(items.Text);
-                    }
-                    foreach (string str in SONumbers.Split('|'))
-                    {
-                        if (str.Length>1){
-                            if (!codes.Contains(str))
-                            {
-                                ToolbarItem item = new ToolbarItem
-                                {
-                                    Text = str,
-                                    Order = ToolbarItemOrder.Secondary
-                                };
-                                item.Clicked += btnViewSO_Clicked;
-                                this.ToolbarItems.Add(item);
-                            }                           
-                        }                     
-                    }                   
-                    await RefreshList();
-                    txfItemCode.Focus();
-                }
-                else
-                {
-                    txfSOCode.Text = "";
-                    txfSOCode.Focus();
                 }
             }
-            
+            else
+            {
+                Vibration.Vibrate();
+                message.DisplayMessage("No Internet Connection", true);
+                txfSOCode.Text = "";
+                txfSOCode.Focus();
+            }
+
         }
         async Task<string> GetAllSONumbers(int palletNumber)
         {
-            if (Connectivity.NetworkAccess==NetworkAccess.Internet)
+            if (Connectivity.NetworkAccess == NetworkAccess.Internet)
             {
                 RestSharp.RestClient client = new RestSharp.RestClient();
                 string path = "DocumentSQLConnection";
@@ -531,14 +551,14 @@ namespace PickAndPack
                         myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
                         foreach (DataRow row in myds.Tables[0].Rows)
                         {
-                            output += row["SONum"] +"|";
+                            output += row["SONum"] + "|";
                         }
                         return output;
                     }
                     else
                     {
                         Vibration.Vibrate();
-                        message.DisplayMessage("Error in fetching data", true);                        
+                        message.DisplayMessage("Error in fetching data", true);
                         return "";
                     }
                 }
@@ -546,14 +566,14 @@ namespace PickAndPack
             else
             {
                 Vibration.Vibrate();
-                message.DisplayMessage("Please recconect to the internet",true);
+                message.DisplayMessage("Please recconect to the internet", true);
                 return "";
-            }          
+            }
         }
         async Task RefreshList()
         {
             lstItems.ItemsSource = null;
-            List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text)).OrderBy(s=>s.Bin).ToList();
+            List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text)).OrderBy(s => s.Bin).ToList();
             if (docs == null)
                 return;
             List<DocLine> displayDocs = new List<DocLine>();
@@ -563,14 +583,14 @@ namespace PickAndPack
                 {
                     DocLine TempDoc = docs.Where(x => x.ItemDesc == s).First();
                     TempDoc.ScanAccQty = docs.Where(x => x.ItemDesc == s).Sum(x => x.ScanAccQty);
-                    TempDoc.ItemQty = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text)).Where(x =>x.PalletNum==0&& x.ItemDesc == s).First().ItemQty;
+                    TempDoc.ItemQty = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text)).Where(x => x.PalletNum == 0 && x.ItemDesc == s).First().ItemQty;
                     TempDoc.Balacnce = TempDoc.ItemQty - (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(txfSOCode.Text)).Where(x => x.ItemDesc == s).Sum(x => x.ScanAccQty);
                     displayDocs.Add(TempDoc);
-                    if(TempDoc.Balacnce == 0)
+                    if (TempDoc.Balacnce == 0)
                     {
                         TempDoc.Complete = "Yes";
                     }
-                    else if (TempDoc.Balacnce!=TempDoc.ItemQty)
+                    else if (TempDoc.Balacnce != TempDoc.ItemQty)
                     {
                         TempDoc.Complete = "No";
                     }
@@ -581,7 +601,7 @@ namespace PickAndPack
                 }
                 catch (Exception exes)
                 {
-                   await DisplayAlert(exes+"","","OK");
+                    await DisplayAlert(exes + "", "", "OK");
                 }
             }
             lstItems.ItemsSource = displayDocs;
@@ -616,14 +636,14 @@ namespace PickAndPack
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
                 if (res.IsSuccessful && res.Content.Contains("Complete"))
                 {
-                    string s = res.Content.Replace('"', ' ').Replace('\\',' ').Trim();
-                    if (s.Split('|').Count()>3)
+                    string s = res.Content.Replace('"', ' ').Replace('\\', ' ').Trim();
+                    if (s.Split('|').Count() > 3)
                     {
                         Vibration.Vibrate();
                         message.DisplayMessage("This order is already on multiple pallets", true);
                         return false;
                     }
-                    else 
+                    else
                     {
                         try
                         {
@@ -641,7 +661,7 @@ namespace PickAndPack
                 }
                 return false;
             }
-            
+
         }
         //private async Task<int> PalletCreate()
         //{
@@ -694,9 +714,9 @@ namespace PickAndPack
             {
                 Vibration.Vibrate();
                 message.DisplayMessage("Error!!! Could Not Save!", true);
-            }               
+            }
         }
-        private async Task<bool> SaveData() 
+        private async Task<bool> SaveData()
         {
             var ds = new DataSet();
             try
@@ -712,24 +732,24 @@ namespace PickAndPack
                 t1.Columns.Add("GRV");
                 string s = txfSOCode.Text;
                 List<DocLine> docs = (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(s)).ToList();
-                    foreach (string str in docs.Select(x => x.ItemDesc).Distinct())
+                foreach (string str in docs.Select(x => x.ItemDesc).Distinct())
+                {
+                    foreach (int ints in docs.Select(x => x.PalletNum).Distinct())
                     {
-                        foreach (int ints in docs.Select(x => x.PalletNum).Distinct())
-                        {
-                            row = t1.NewRow();
-                            row["DocNum"] = docs.Select(x=>x.DocNum).FirstOrDefault();
-                            row["ScanAccQty"] = docs.Where(x => x.PalletNum == ints && x.ItemDesc == str).Sum(x => x.ScanAccQty); 
-                            row["ScanRejQty"] = 0;
-                            row["ItemBarcode"] = docs.Where(x => x.PalletNum == ints && x.ItemDesc == str).Select(x => x.ItemBarcode).FirstOrDefault();
-                            row["Balance"] = 0;
-                            row["PalletNumber"] = ints;
-                            row["GRV"] = false;
-                            t1.Rows.Add(row);
-                        }
+                        row = t1.NewRow();
+                        row["DocNum"] = docs.Select(x => x.DocNum).FirstOrDefault();
+                        row["ScanAccQty"] = docs.Where(x => x.PalletNum == ints && x.ItemDesc == str).Sum(x => x.ScanAccQty);
+                        row["ScanRejQty"] = 0;
+                        row["ItemBarcode"] = docs.Where(x => x.PalletNum == ints && x.ItemDesc == str).Select(x => x.ItemBarcode).FirstOrDefault();
+                        row["Balance"] = 0;
+                        row["PalletNumber"] = ints;
+                        row["GRV"] = false;
+                        t1.Rows.Add(row);
                     }
+                }
                 ds.Tables.Add(t1);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 return false;
             }
