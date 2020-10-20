@@ -59,7 +59,8 @@ namespace ScannerFDB
                 swWTRF.IsToggled = config.WhseTrfActive;
                 swInvCnt.IsToggled = config.CountActive;
                 swInvoice.IsToggled = config.InvoiceActive;
-                //swDelLines.IsToggled = config.DeleteSOLines;
+                swDelSOLines.IsToggled = config.DeleteSOLines;
+                swDelGRVLines.IsToggled = config.DeletePOLines;
                 txtReceiveUser.Text = config.ReceiveUser.ToString();
                 txtInvoiceUser.Text = config.InvoiceUser.ToString();
                 txtWHTrfUser.Text = config.WhTrfUser.ToString();
@@ -91,7 +92,8 @@ namespace ScannerFDB
             config.CountActive = swInvCnt.IsToggled;
             config.InvoiceActive = swInvoice.IsToggled;
             config.DefaultAPI = txfAPI.Text;
-            //config.DeleteSOLines = swDelLines.IsToggled;
+            config.DeleteSOLines = swDelSOLines.IsToggled;
+            config.DeletePOLines = swDelGRVLines.IsToggled;
             if (txtReceiveUser.Text.ToString().Length < 1)
             {
                 config.ReceiveUser = "0";
@@ -186,14 +188,28 @@ namespace ScannerFDB
 
         private void swInvoice_Toggled(object sender, ToggledEventArgs e)
         {
-            //if (swInvoice.IsToggled)
-            //{
-            //    swDelLines.IsEnabled = true;
-            //}
-            //else {
-            //    swDelLines.IsToggled = false;
-            //    swDelLines.IsEnabled = false;
-            //}
+            if (swInvoice.IsToggled)
+            {
+                swDelSOLines.IsEnabled = true;
+            }
+            else
+            {
+                swDelSOLines.IsToggled = false;
+                swDelSOLines.IsEnabled = false;
+            }
+        }
+
+        private void swDelGRVLines_Toggled(object sender, ToggledEventArgs e)
+        {
+            if (swGRV.IsToggled)
+            {
+                swDelGRVLines.IsEnabled = true;
+            }
+            else
+            {
+                swDelGRVLines.IsToggled = false;
+                swDelGRVLines.IsEnabled = false;
+            }
         }
     }
 }

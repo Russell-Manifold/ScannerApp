@@ -113,7 +113,7 @@ namespace PickAndPack
                 string path = "AddDocument";
                 client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
                 {
-                    string str = $"GET?DocHead={docH}&Docline={docL}&DocType=103& Userid ={ config.InvoiceUser}";
+                    string str = $"GET?DocHead={docH}&Docline={docL}&DocType=103&Userid={config.InvoiceUser}";
                     var Request = new RestRequest(str, Method.POST);
                     var cancellationTokenSource = new CancellationTokenSource();
                     var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);

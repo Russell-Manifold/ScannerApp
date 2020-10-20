@@ -34,19 +34,27 @@
                 </Grid.ColumnDefinitions>
                 <Label Text="Pastel GRV Module Active" Grid.Column="0"/>
                 <Switch x:Name="swGRV" IsToggled="false" Grid.Column="1" />
-                <Label Text="Repacking Module Active" Grid.Row="1" Grid.Column="0"/>
-                <Switch x:Name="swRepack" IsToggled="false" Grid.Row="1"  Grid.Column="1" IsEnabled="False" />
-                <Label Text="Pastel Whse Transfers Active" Grid.Row="2"  Grid.Column="0"/>
-                <Switch x:Name="swWTRF" IsToggled="false" Grid.Row="2"  Grid.Column="1" IsEnabled="False"/>
-                <Label Text="Pastel Inventory Counts Active" Grid.Row="3"  Grid.Column="0"/>
-                <Switch x:Name="swInvCnt"  IsToggled="false" Grid.Row="3"  Grid.Column="1" IsEnabled="False"/>
-                <Label Text="Pastel Invoice Module Active" Grid.Row="4"  Grid.Column="0"/>
-                <Switch x:Name="swInvoice" IsToggled="false" Grid.Row="4"  Grid.Column="1" Toggled="swInvoice_Toggled"/>
-                <!-- the following can only be active if the Invoice module is active, else disable the switch-->
-                <!--<Label Text="Delete Sales Order Lines After Successful Invoice" Grid.Row="5"  Grid.Column="0"/>
-                <Switch x:Name="swDelLines" IsToggled="false" Grid.Row="5"  Grid.Column="1" IsEnabled="False" />-->
+                <Label Text="Delete Purchase Lines After GRV Complete" Grid.Row="1"  Grid.Column="0"/>
+                <Switch x:Name="swDelGRVLines" IsToggled="false" Grid.Row="1"  Grid.Column="1" IsEnabled="False" />
+                
+                <Label Text="Repacking Module Active" Grid.Row="2" Grid.Column="0"/>
+                <Switch x:Name="swRepack" IsToggled="false" Grid.Row="2"  Grid.Column="1" IsEnabled="False" />
+                
+                <Label Text="Pastel Whse Transfers Active" Grid.Row="3"  Grid.Column="0"/>
+                <Switch x:Name="swWTRF" IsToggled="false" Grid.Row="3"  Grid.Column="1" IsEnabled="False"/>
+                
+                <Label Text="Pastel Inventory Counts Active" Grid.Row="4"  Grid.Column="0"/>
+                <Switch x:Name="swInvCnt"  IsToggled="false" Grid.Row="4"  Grid.Column="1" IsEnabled="False"/>
+                
                 <Label Text="Pastel Invoice Module Active" Grid.Row="5"  Grid.Column="0"/>
-                <Editor x:Name="txfAPI" Grid.Row="6" Text="" Grid.Column="0" Grid.ColumnSpan="2" />
+                <Switch x:Name="swInvoice" IsToggled="false" Grid.Row="5"  Grid.Column="1" Toggled="swInvoice_Toggled"/>
+                <!-- the following can only be active if the Invoice module is active, else disable the switch-->
+                
+                <Label Text="Delete Sales Order Lines After Successful Invoice" Grid.Row="6"  Grid.Column="0"/>
+                <Switch x:Name="swDelSOLines" IsToggled="false" Grid.Row="6"  Grid.Column="1" IsEnabled="False" />
+                
+                <Label Text="Pastel Invoice Module Active" Grid.Row="7"  Grid.Column="0"/>
+                <Editor x:Name="txfAPI" Grid.Row="7" Text="" Grid.Column="0" Grid.ColumnSpan="2" />
             </Grid>
             <Button Text="Save" x:Name="btnSave" Clicked="btnSave_Clicked" VerticalOptions="EndAndExpand" FontSize="Large" HeightRequest="75"/>
     </StackLayout>
