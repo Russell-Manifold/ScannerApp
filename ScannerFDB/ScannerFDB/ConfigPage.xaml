@@ -4,11 +4,11 @@
              xmlns:d="http://xamarin.com/schemas/2014/forms/design"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             x:Class="ScannerFDB.ConfigPage">
+             x:Class="ScannerFDB.ConfigPage"
+             Title="Device Configuration">
     <ScrollView>
-    <StackLayout VerticalOptions="FillAndExpand">
-        <Label Text="Select Warehouses for this Device:" FontSize="Large" HorizontalTextAlignment="Center"/>
-        <Label Text="Default Accept/Sales Warehouse:" FontSize="Medium"/>
+        <StackLayout VerticalOptions="FillAndExpand">
+            <Label Text="Default Accept/Sales Warehouse:" FontSize="Medium"/>
         <Picker Title="-Accepted WH-" x:Name="txfAccWH"  VerticalOptions="Start" HorizontalOptions="FillAndExpand" SelectedIndexChanged="txfAccWH_SelectedIndexChanged"/>
         <Label Text="Default Damaged Goods Warehouse:" FontSize="Medium"/>
         <Picker Title="-Damaged Goods WH-" x:Name="txfRejWH"  VerticalOptions="Start" HorizontalOptions="FillAndExpand" SelectedIndexChanged="txfRejWH_SelectedIndexChanged"/>
@@ -16,15 +16,18 @@
             <Entry x:Name="txtReceiveUser" Placeholder="Enter User Code" HorizontalOptions="Start" WidthRequest="90" Text="0"/>
             <Label Text="User Code for INVOICING Module" FontSize="Medium"/>
             <Entry x:Name="txtInvoiceUser" Placeholder="Enter User Code" HorizontalOptions="Start"  WidthRequest="90" Text="0"/>
-            <Label Text="User Code for WHSE TRANSFER Module" FontSize="Medium"/>
+            <Label Text="User Code for WHSE TRF Module" FontSize="Medium"/>
             <Entry x:Name="txtWHTrfUser" Placeholder="Enter User Code" HorizontalOptions="Start"  WidthRequest="90" Text="0"/>
+            <Label Text="Module Activation" FontSize="Large"/>
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
+                    <RowDefinition Height="40"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
@@ -34,7 +37,7 @@
                 </Grid.ColumnDefinitions>
                 <Label Text="Pastel GRV Module Active" Grid.Column="0"/>
                 <Switch x:Name="swGRV" IsToggled="false" Grid.Column="1" />
-                <Label Text="Delete Purchase Lines After GRV Complete" Grid.Row="1"  Grid.Column="0"/>
+                <Label Text="Delete PO Lines After GRV Complete" Grid.Row="1"  Grid.Column="0"/>
                 <Switch x:Name="swDelGRVLines" IsToggled="false" Grid.Row="1"  Grid.Column="1" IsEnabled="False" />
                 
                 <Label Text="Repacking Module Active" Grid.Row="2" Grid.Column="0"/>
@@ -53,8 +56,8 @@
                 <Label Text="Delete Sales Order Lines After Successful Invoice" Grid.Row="6"  Grid.Column="0"/>
                 <Switch x:Name="swDelSOLines" IsToggled="false" Grid.Row="6"  Grid.Column="1" IsEnabled="False" />
                 
-                <Label Text="Pastel Invoice Module Active" Grid.Row="7"  Grid.Column="0"/>
-                <Editor x:Name="txfAPI" Grid.Row="7" Text="" Grid.Column="0" Grid.ColumnSpan="2" />
+                <Label Text="Pastel API Path" Grid.Row="7"  Grid.Column="0"/>
+                <Editor x:Name="txfAPI" Grid.Row="8" Text="" Grid.Column="0" Grid.ColumnSpan="2" />
             </Grid>
             <Button Text="Save" x:Name="btnSave" Clicked="btnSave_Clicked" VerticalOptions="EndAndExpand" FontSize="Large" HeightRequest="75"/>
     </StackLayout>

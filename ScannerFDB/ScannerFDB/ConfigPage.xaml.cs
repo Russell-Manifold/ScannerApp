@@ -61,9 +61,17 @@ namespace ScannerFDB
                 swInvoice.IsToggled = config.InvoiceActive;
                 swDelSOLines.IsToggled = config.DeleteSOLines;
                 swDelGRVLines.IsToggled = config.DeletePOLines;
-                txtReceiveUser.Text = config.ReceiveUser.ToString();
-                txtInvoiceUser.Text = config.InvoiceUser.ToString();
-                txtWHTrfUser.Text = config.WhTrfUser.ToString();
+                try
+                { txtReceiveUser.Text = config.ReceiveUser.ToString(); }
+                catch { txtReceiveUser.Text = "0"; }
+
+               try  {txtInvoiceUser.Text = config.InvoiceUser.ToString(); }
+               catch{ txtInvoiceUser.Text = "0"; }
+
+               try
+                {txtWHTrfUser.Text = config.WhTrfUser.ToString();}
+                catch { txtWHTrfUser.Text = "0"; }
+                               
                 try
                 {
                     txfAPI.Text = config.DefaultAPI;
