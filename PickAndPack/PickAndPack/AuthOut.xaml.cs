@@ -22,6 +22,7 @@ namespace PickAndPack
         private List<string> ErrorDocs = new List<string>();
         private List<string> CompleteCodes = new List<string>();
         private List<DocHeader> DocHeaders = new List<DocHeader>();
+        private List<Tuple<string, string>> DocLines = new List<Tuple<string, string>>();
         public AuthOut()
         {
             InitializeComponent();
@@ -120,6 +121,7 @@ namespace PickAndPack
                     if (res.IsSuccessful && res.Content.Contains("0"))
                     {
                         CompleteCodes.Add(docCode + " - " + res.Content.Split('|')[1].Replace('"', ' ').Trim());
+                        await RemoveAllLines(docCode);
                     }
                     else if (res.IsSuccessful && res.Content.Contains("99"))
                     {
@@ -137,6 +139,34 @@ namespace PickAndPack
                 await SQLRemove(s.Trim().Split(' ')[0]);
             }
             return true;
+        }
+        private async Task<bool> RemoveAllLines(string docnum)
+		{
+			foreach (Tuple<string,string> str in DocLines.Where(x=>x.Item1==docnum))
+			{
+                await RemoveLine(docnum,str.Item2);
+            }
+            return true;
+        }
+        private async Task<bool> RemoveLine(string docNum,string Line)
+        {
+            RestClient client = new RestClient();
+            string path = "EditDocument";
+            client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
+            {
+                string str = $"GET?DocType=102&docNum={docNum}&function=D&lineDetail={Line}";
+                var Request = new RestRequest(str, Method.POST);
+                var cancellationTokenSource = new CancellationTokenSource();
+                var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+                if (res.IsSuccessful && res.Content.Contains("0"))
+                {
+                    return true;
+				}
+				else
+				{
+                    return false;
+				}
+            }
         }
         string CreateDocHeader(DataTable det)
         {
@@ -156,9 +186,15 @@ namespace PickAndPack
                     CurrentRow["TaxType"] = "0" + CurrentRow["TaxType"].ToString();
                 }
                 if (CurrentRow != null)
-                    s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{CurrentRow["WHID"].ToString()}%23";
-                //                                 285 | 1                                | 350.88                         | 400.00                           | EACH                          | 01                               |                                   |                                   | ACC /                             |                       Description |4|001             
+				{
+                    string temp= $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{CurrentRow["WHID"].ToString()}%23";
+                    //                                 285 | 1                                | 350.88                         | 400.00                           | EACH                          | 01                               |                                   |                                   | ACC /                             |                       Description |4|001             
+                    s += temp;
+                    temp =temp.Replace(',', '.');
+                    DocLines.Add(new Tuple<string, string>(CurrentRow["OrderNumber"].ToString(), temp.Remove(temp.Length-3,3)));
+                }
             }
+            
             return s.Replace(',','.');
         }
         private async Task SQLRemove(string doc)
