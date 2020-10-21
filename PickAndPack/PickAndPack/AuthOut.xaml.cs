@@ -114,6 +114,10 @@ namespace PickAndPack
                 string path = "AddDocument";
                 client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
                 {
+					if (config.InvoiceUser==""||config.InvoiceUser==null)
+					{
+                        config.InvoiceUser = "0";
+					}
                     string str = $"GET?DocHead={docH}&Docline={docL}&DocType=103&Userid={config.InvoiceUser}";
                     var Request = new RestRequest(str, Method.POST);
                     var cancellationTokenSource = new CancellationTokenSource();
@@ -127,7 +131,12 @@ namespace PickAndPack
                     if (res.IsSuccessful && res.Content.Contains("0"))
                     {
                         CompleteCodes.Add(docCode + " - " + res.Content.Split('|')[1].Replace('"', ' ').Trim());
-                        if (config.DeleteSOLines) {await RemoveAllLines(docCode);}
+                        if (config.DeleteSOLines) 
+                        {
+                            await RemoveAllLines(docCode);
+                        }
+                        await RemoveAllOld(docCode);
+                        await SQLRemove(docCode);
                     }
                     else 
                     {
@@ -242,6 +251,8 @@ namespace PickAndPack
         }
         private async Task GetAllHeaders()
         {
+            CompleteNums.Clear();
+            DocHeaders.Clear();
             RestSharp.RestClient client = new RestSharp.RestClient();
             string path = "DocumentSQLConnection";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
@@ -253,11 +264,10 @@ namespace PickAndPack
                 var cancellationTokenSource = new CancellationTokenSource();
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
                 if (res.Content.ToString().Contains("DocNum"))
-                {
-                    DocHeaders.Clear();
+                {                  
                     DataSet myds = new DataSet();
                     myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
-                    CompleteNums.Clear();
+                    
                     foreach (DataRow row in myds.Tables[0].Rows)
                     {
                         CompleteNums.Add(row["DocNum"].ToString());
@@ -395,5 +405,33 @@ namespace PickAndPack
             }
             return true;
         }
-    }
+		private async void swRemove_Toggled(object sender, ToggledEventArgs e)
+		{      
+            if((sender as Switch).IsToggled)
+			{
+                string DocNum = "";
+                try
+                {
+                    DocNum = (((sender as Switch).Parent.Parent.Parent as ViewCell).BindingContext as DocHeader).DocNum;
+                }
+                catch
+                {
+                    Vibration.Vibrate();
+                    message.DisplayMessage("Could not load order!", false);
+                    return;
+                }
+                bool res = await DisplayAlert("Remove Order Lines", $"Would you like to reset order number {DocNum}?", "Yes", "Cancel");
+                if (res)
+                {
+                    await RemoveAllOld(DocNum);
+                    await SQLRemove(DocNum);
+                    await GetItems();
+                }
+                else
+                {
+                    (sender as Switch).IsToggled = false;
+                }
+            }           
+        }
+	}
 }

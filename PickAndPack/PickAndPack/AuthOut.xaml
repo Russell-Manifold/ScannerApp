@@ -28,14 +28,14 @@
                                                 <RowDefinition Height="Auto"/>
                                             </Grid.RowDefinitions>
                                             <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="100%" />
+                                                <ColumnDefinition Width="100*" />
                                             </Grid.ColumnDefinitions>
                                             <Label Grid.Row="0" Grid.Column="0" Text="{Binding DocNum,StringFormat='Doc Num:{0}'}" FontAttributes="Bold" TextColor="Black"/>
                                             <Label Grid.Row="1" Grid.Column="0" Text="{Binding AcctCode,StringFormat='Acct Code:{0}'}" TextColor="Black"/>
                                             <Label Grid.Row="2" Grid.Column="0" Text="{Binding OrderNumber,StringFormat='Order Number:{0}'}" TextColor="Black"/>
                                             <Label Grid.Row="3" Grid.Column="0" Text="{Binding DeliveryAddress1,StringFormat='Deliv Addr 1:{0}'}" TextColor="Black"/>
                                             <Label Grid.Row="4" Grid.Column="0" Text="Remove from this list" TextColor="Black"/>
-                                            <Switch x:Name="swRemove" IsToggled="false"  Grid.Row="4" Grid.Column="0" HorizontalOptions="End" OnColor="Red" ThumbColor="Red"/>
+                                            <Switch x:Name="swRemove" IsToggled="false"  Grid.Row="4" Grid.Column="0" HorizontalOptions="End" OnColor="Red" ThumbColor="Red" Toggled="swRemove_Toggled"/>
                                         </Grid>
                                     </StackLayout>
                                 </ViewCell>

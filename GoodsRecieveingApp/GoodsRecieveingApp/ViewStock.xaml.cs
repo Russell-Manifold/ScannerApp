@@ -339,6 +339,11 @@ namespace GoodsRecieveingApp
             string path = "AddDocument";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
             {
+				if (config.ReceiveUser==""|| config.ReceiveUser==null)
+				{
+                    config.ReceiveUser = "0";
+
+                }
                 string str = $"GET?DocHead={docH}&Docline={docL}&DocType={doctype}&Userid={config.ReceiveUser}"; 
                 var Request = new RestRequest(str, Method.POST);
                 var cancellationTokenSource = new CancellationTokenSource();
@@ -465,6 +470,11 @@ namespace GoodsRecieveingApp
             string path = "AddDocument";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
             {
+				if (config.ReceiveUser==""|| config.ReceiveUser==null)
+				{
+                    config.ReceiveUser = "0";
+
+                }
                 string str = $"GET?DocHead={docH}&Docline={docL}&DocType={doctype}&Userid={config.ReceiveUser}";
                 var Request = new RestRequest(str, Method.POST);
                 var cancellationTokenSource = new CancellationTokenSource();
