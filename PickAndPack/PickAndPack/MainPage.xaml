@@ -12,7 +12,7 @@
         <Button Text="Hand Over  &#10;Picking Slip" x:Name="btnHOPickingSlips" Clicked="btnHOPickingSlips_Clicked" VerticalOptions="StartAndExpand" FontSize="Large" ImageSource="handover.png" BackgroundColor="Transparent"/>
         <Button x:Name="btnSingleOrder" Text="Pack 1 Order &#10; onto Pallet(s)" Clicked="btnSingleOrder_Clicked" VerticalOptions="StartAndExpand" FontSize="Large" ImageSource="OnePallet.png" BackgroundColor="Transparent"/>
         <Button Text="Pack 1 Pallet &#10; With Order(s)" x:Name="btnSinglePallet" Clicked="btnSinglePallet_Clicked" VerticalOptions="StartAndExpand" FontSize="Large" ImageSource="MultiOrderPallet.png" BackgroundColor="Transparent"/>
-        <Button Text="Release" x:Name="btnReleaseOrd" Clicked="btnReleaseOrd_Clicked"  VerticalOptions="StartAndExpand" FontSize="Large" ImageSource="MultiOrderPallet.png" BackgroundColor="Transparent"/>
+        <Button Text="Release For Invoicing" x:Name="btnReleaseOrd" Clicked="btnReleaseOrd_Clicked"  VerticalOptions="StartAndExpand" FontSize="Large" ImageSource="invoice.png" BackgroundColor="Transparent"/>
     </StackLayout>
 </ContentPage>
      

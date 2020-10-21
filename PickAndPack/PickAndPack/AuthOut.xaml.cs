@@ -118,18 +118,20 @@ namespace PickAndPack
                     var Request = new RestRequest(str, Method.POST);
                     var cancellationTokenSource = new CancellationTokenSource();
                     var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+
+                    // 1) Need to add res.content to popup message when add document fails (reason for the failure) 
+                    // 2) we need to find a way to remove the document from the scanner and SQL database if they choose to invoice it through pastel. 
+                    // On tap of "swRemove" switch, pop up a confirmation of "remove this document from this list?.
+                    // on yes - run your "delete SQl code and refresh the screen.
+
                     if (res.IsSuccessful && res.Content.Contains("0"))
                     {
                         CompleteCodes.Add(docCode + " - " + res.Content.Split('|')[1].Replace('"', ' ').Trim());
-                        await RemoveAllLines(docCode);
+                        if (config.DeleteSOLines) {await RemoveAllLines(docCode);}
                     }
-                    else if (res.IsSuccessful && res.Content.Contains("99"))
+                    else 
                     {
                         ErrorDocs.Add(docCode + " - " + res.Content);
-                    }
-                    else
-                    {
-                        ErrorDocs.Add(docCode);
                     }
                 }
             }
