@@ -20,6 +20,7 @@ namespace GoodsRecieveingApp
         string docCode ="";
         IMessage message = DependencyService.Get<IMessage>();
         DeviceConfig config = new DeviceConfig();
+        private List<Tuple<string, string>> DocLines = new List<Tuple<string, string>>();
         bool isSaving = false;
         public ViewStock(string dl)
         {
@@ -154,16 +155,25 @@ namespace GoodsRecieveingApp
                 {
                     if (await CanPartRecieve())
                     {
-                        string res = await DisplayActionSheet("Confirm - Part recieve the items you have scanned?", "YES", "NO");
-                        if (res == "YES")
-                        {
-                            await MarkAndComplete();
-                        }
-                        else
-                        {
+                        if(await GRVmodule())
+						{
+                            string res = await DisplayActionSheet("Confirm - Part recieve the items you have scanned?", "YES", "NO");
+                            if (res == "YES")
+                            {
+                                await MarkAndComplete();
+                            }
+                            else
+                            {
+                                Vibration.Vibrate();
+                                message.DisplayMessage("Please make sure all items are GREEN!", true);
+                            }
+						}
+						else
+						{
                             Vibration.Vibrate();
-                            message.DisplayMessage("Please make sure all items are GREEN!", true);
+                            message.DisplayMessage("Please enable Part receive in settings!", true);
                         }
+                        
                     }
                     else
                     {
@@ -359,6 +369,7 @@ namespace GoodsRecieveingApp
         async Task<string> CreateDocLines(List<DocLine> d)
         {
             string thisline = "";
+            DocLines.Clear();
             List<string> doneItems = new List<string>();
             DataTable det = await GetDocDetails(docCode);
             if (det==null)
@@ -385,13 +396,15 @@ namespace GoodsRecieveingApp
                             txtype = CurrentRow["TaxType"].ToString();
                         }
                         if (CurrentRow != null)
-                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{config.DefaultAccWH}%23";
-                        //thisline = "";
-                        //thisline = CurrentRow["CostPrice"].ToString() + "|" + docline.ScanAccQty + "|" + CurrentRow["ExVat"].ToString() + "|" + CurrentRow["InclVat"].ToString() + "|" + CurrentRow["Unit"].ToString() + "|" + txtype + "|" + CurrentRow["DiscType"].ToString() + "|" + CurrentRow["DiscPerc"].ToString() + "|" + docline.ItemCode.PadRight(15, ' ') + "|" + CurrentRow["ItemDesc"].ToString().PadRight(40, ' ') + "|" + "4" + "|" + "001" + "|" + CurrentRow["CostCode"].ToString() + "|" + "%23";
-                        //s += thisline.ToString();
+						{
+                            string temp = $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanAccQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{config.DefaultAccWH}%23";
+                            s += temp;
+                            temp = temp.Replace(',', '.');
+                            DocLines.Add(new Tuple<string, string>(CurrentRow["OrderNumber"].ToString(), temp.Remove(temp.Length - 3, 3)));
+                        }
                     }
                     if (docline.ScanRejQty > 0)
-                    {                       
+                    {
                         DataRow CurrentRow = det.Select($"ItemCode=={docline.ItemCode}").FirstOrDefault();
                         if (CurrentRow["TaxType"].ToString().Length == 1)
                         {
@@ -402,27 +415,17 @@ namespace GoodsRecieveingApp
                             txtype = CurrentRow["TaxType"].ToString();
                         }
                         if (CurrentRow != null)
-                            s += $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{config.DefaultRejWH}%23";
-                        //thisline = "";
-                        //thisline = CurrentRow["CostPrice"].ToString() + "|" + docline.ScanAccQty + "|" + CurrentRow["ExVat"].ToString() + "|" + CurrentRow["InclVat"].ToString() + "|" + CurrentRow["Unit"].ToString() + "|" + txtype + "|" + CurrentRow["DiscType"].ToString() + "|" + CurrentRow["DiscPerc"].ToString() + "|" + docline.ItemCode.PadRight(15, ' ') + "|" + CurrentRow["ItemDesc"].ToString().PadRight(40, ' ') + "|" + "4" + "|" + "001" + "|" + CurrentRow["CostCode"].ToString() + "|" + "%23";
-                        //s += thisline.ToString();
-                        //s += $"{CurrentRow["CostPrice"].ToString()}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{txtype}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{docline.ItemCode.PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{MainPage.REJWH}|{CurrentRow["CostCode"].ToString()}%23";                 
+						{
+                            string temp = $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{docline.ScanRejQty}|{CurrentRow["ExVat"].ToString().Replace(',', '.')}|{CurrentRow["InclVat"].ToString().Replace(',', '.')}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString().Replace(',', '.')}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{config.DefaultRejWH}%23";
+                            s += temp;
+                            temp = temp.Replace(',', '.');
+                            DocLines.Add(new Tuple<string, string>(CurrentRow["OrderNumber"].ToString(), temp.Remove(temp.Length - 3, 3)));
+                        }
                     }
                     doneItems.Add(docline.ItemBarcode);
 
                 }              
             }
-            //old code
-            //foreach (string CODE in d.Select(x=>x.ItemCode).Distinct())
-            //{
-            //    foreach (string WH in d.Where(x=>x.ItemCode==CODE && (x.ScanAccQty!=0||x.ScanRejQty!=0)).Select(x => x.WarehouseID).Distinct())
-            //    {            
-            //        var CurrentRow =(from dr in det.Select()where(string)dr["ItemCode"]==CODE select dr).FirstOrDefault() ;
-            //        GLCode = await GetGlCode(CODE, WH);
-            //        if (CurrentRow!=null)
-            //            s += $"{CurrentRow["CostPrice"].ToString()}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{GLCode}|{CurrentRow["ItemDesc"].ToString()}|6|{WH}|{CurrentRow["CostCode"].ToString()}%23";
-            //    }                  
-            //}
             return s.Replace(',','.');
         }
         async Task<string> CreateDocHeader()
@@ -482,7 +485,9 @@ namespace GoodsRecieveingApp
                 if (res.IsSuccessful && res.Content.Contains("0"))
                 {
                     await DisplayAlert("Complete!", "Request sent to pastel." + Environment.NewLine + res.Content.Split('|')[1].ToString().Substring(0, res.Content.Split('|')[1].Length - 1) + " successfully created", "OK");
-                    await MarAsRecieved();                  
+                    //await MarAsRecieved();   
+                    await RemoveAllLines(docCode);
+                    await RemoveAllOld(docCode);
                     return true;
                 }
             }
@@ -627,7 +632,7 @@ namespace GoodsRecieveingApp
                 foreach (string str in docs.Select(x => x.ItemCode).Distinct())
                 {
                     DocLine currentGRV = (await App.Database.GetSpecificDocsAsync(docCode)).Where(x => x.GRN && x.ItemCode == str).FirstOrDefault();
-                    if (currentGRV != null && await GRVmodule())
+                    if (currentGRV != null)
                     {
                         row = t1.NewRow();
                         row["DocNum"] = docCode;
@@ -638,10 +643,6 @@ namespace GoodsRecieveingApp
                         row["PalletNumber"] = 0;
                         row["GRV"] = true;
                         t1.Rows.Add(row);
-                    }
-                    else if (currentGRV != null && !await GRVmodule())
-                    {
-                        await DisplayAlert("Please set up GRV in the settings", "Error", "OK");
                     }
                     List<DocLine> CurrItems = (await App.Database.GetSpecificDocsAsync(docCode)).Where(x => !x.GRN && x.ItemCode == str && x.ItemQty == 0).ToList();
                     if (CurrItems.Count() > 0)
@@ -700,6 +701,49 @@ namespace GoodsRecieveingApp
                 return false;
             }
 
+        }
+        private async Task<bool> RemoveAllLines(string docnum)
+        {
+            foreach (Tuple<string, string> str in DocLines.Where(x => x.Item1 == docnum))
+            {
+                await RemoveLine(docnum, str.Item2);
+            }
+            return true;
+        }
+        private async Task<bool> RemoveLine(string docNum, string Line)
+        {
+            RestClient client = new RestClient();
+            string path = "EditDocument";
+            client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
+            {
+                string str = $"GET?DocType=102&docNum={docNum}&function=D&lineDetail={Line}";
+                var Request = new RestRequest(str, Method.POST);
+                var cancellationTokenSource = new CancellationTokenSource();
+                var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
+                if (res.IsSuccessful && res.Content.Contains("0"))
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        private async Task<bool> RemoveAllOld(string docNum)
+        {
+            try
+            {
+                foreach (DocLine dl in (await GoodsRecieveingApp.App.Database.GetSpecificDocsAsync(docNum)))
+                {
+                    await GoodsRecieveingApp.App.Database.Delete(dl);
+                }
+                await GoodsRecieveingApp.App.Database.Delete(await GoodsRecieveingApp.App.Database.GetHeader(docNum));
+            }
+            catch
+            {
+            }
+            return true;
         }
     }
 }

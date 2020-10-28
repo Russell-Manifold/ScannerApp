@@ -188,6 +188,7 @@ namespace PickAndPack
         }
         async Task<string> CreateDocLines(List<DocLine> d, DataTable det)
         {
+            DocLines.Clear();
             string s = "";
             foreach (string CurrItem in d.Where(x => x.PalletNum == 0).Select(x => x.ItemCode).Distinct())
             {
