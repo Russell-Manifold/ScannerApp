@@ -485,8 +485,7 @@ namespace GoodsRecieveingApp
                 if (res.IsSuccessful && res.Content.Contains("0"))
                 {
                     await DisplayAlert("Complete!", "Request sent to pastel." + Environment.NewLine + res.Content.Split('|')[1].ToString().Substring(0, res.Content.Split('|')[1].Length - 1) + " successfully created", "OK");
-                    //await MarAsRecieved();   
-                    await RemoveAllLines(docCode);
+                    await RemoveComplete(docCode);
                     await RemoveAllOld(docCode);
                     return true;
                 }
@@ -702,31 +701,38 @@ namespace GoodsRecieveingApp
             }
 
         }
-        private async Task<bool> RemoveAllLines(string docnum)
-        {
-            foreach (Tuple<string, string> str in DocLines.Where(x => x.Item1 == docnum))
-            {
-                await RemoveLine(docnum, str.Item2);
-            }
-            return true;
-        }
-        private async Task<bool> RemoveLine(string docNum, string Line)
-        {
+        private async Task RemoveComplete(string DocCode)
+		{
             RestClient client = new RestClient();
-            string path = "EditDocument";
+            string path = "GetFullDocDetails";
+            //string path = "GetDocument";
             client.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + path);
             {
-                string str = $"GET?DocType=102&docNum={docNum}&function=D&lineDetail={Line}";
-                var Request = new RestRequest(str, Method.POST);
+                string str = $"GET?qrystr=ACCHISTL|6|{DocCode}|106";
+                var Request = new RestRequest(str, Method.GET);
                 var cancellationTokenSource = new CancellationTokenSource();
                 var res = await client.ExecuteAsync(Request, cancellationTokenSource.Token);
                 if (res.IsSuccessful && res.Content.Contains("0"))
                 {
-                    return true;
+                    DataSet myds = new DataSet();
+                    myds = Newtonsoft.Json.JsonConvert.DeserializeObject<DataSet>(res.Content);
+                    await RemoveAllLines(myds.Tables[0]);
                 }
-                else
+            }
+        }
+        private async Task RemoveAllLines(DataTable dt)
+		{
+			foreach (DataRow CurrentRow in dt.Rows)
+			{
+                string Line = $"{(CurrentRow["CostPrice"].ToString()).Replace(',', '.')}|{CurrentRow["ItemQty"].ToString()}|{CurrentRow["ExVat"].ToString()}|{CurrentRow["InclVat"].ToString()}|{CurrentRow["Unit"].ToString()}|{CurrentRow["TaxType"].ToString()}|{CurrentRow["DiscType"].ToString()}|{CurrentRow["DiscPerc"].ToString()}|{CurrentRow["ItemCode"].ToString().PadRight(15, ' ')}|{CurrentRow["ItemDesc"].ToString().PadRight(40, ' ')}|4|{CurrentRow["WHID"].ToString()}";
+                RestClient clients = new RestClient();
+                string paths = "EditDocument";
+                clients.BaseUrl = new Uri(GoodsRecieveingApp.MainPage.APIPath + paths);
                 {
-                    return false;
+                    string str = $"GET?DocType=102&docNum={docCode}&function=D&lineDetail={Line}";
+                    var Request = new RestRequest(str, Method.POST);
+                    var cancellationTokenSource = new CancellationTokenSource();
+                    var res = await clients.ExecuteAsync(Request, cancellationTokenSource.Token);
                 }
             }
         }
